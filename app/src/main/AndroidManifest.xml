@@ -10,6 +10,10 @@
         android:name=".App"
         android:theme="@style/AppTheme">
         <activity android:name=".activities.WelcomeActivity">
+
+        </activity>
+        <activity android:name=".activities.MyTestActivity"
+            android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
