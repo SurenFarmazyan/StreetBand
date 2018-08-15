@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomMainBoard">
+        <attr name="board_length" format="float"/>
+    </declare-styleable>
+    <declare-styleable name="CustomEditBoard">
+        <attr name="start" format="float"/>
+        <attr name="song_length" format="float"/>
+        <attr name="octave_sum" format="integer"/>
+    </declare-styleable>
+    <declare-styleable name="CustomSeekBar">
+        <attr name="tact">
+            <flag name="three" value="1"/>
+            <flag name="four" value="2"/>
+            <flag name="six" value="4"/>
+        </attr>
+        <attr name="length" format="integer"/>
+    </declare-styleable>
+</resources>
