@@ -133,6 +133,7 @@ public class CustomMainBoard extends ViewGroup {
 
         mDensity = context.getResources().getDisplayMetrics().density;
 
+
         //paint
         mBoldLinePaint.setColor(Color.WHITE);
         mBoldLinePaint.setStrokeWidth(2 * mDensity);

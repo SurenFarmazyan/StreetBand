@@ -16,4 +16,8 @@
         </attr>
         <attr name="length" format="integer"/>
     </declare-styleable>
+    <declare-styleable name="CustomCursor">
+        <attr name="position" format="float"/>
+        <attr name="show_line" format="boolean"/>
+    </declare-styleable>
 </resources>
