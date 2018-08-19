@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 
 import com.streetband.R;
+import com.streetband.customViews.CustomCursor;
 import com.streetband.customViews.CustomEditBoard;
 import com.streetband.customViews.CustomMainBoard;
 import com.streetband.customViews.CustomSeekBar;
@@ -20,6 +21,7 @@ import com.streetband.customViews.CustomSeekBar;
 public class MyTestActivity extends AppCompatActivity {
     private CustomMainBoard mCustomMainBoard;
     private CustomSeekBar mCustomSeekBar;
+    private CustomCursor mCustomCursor;
 
 
     private PopupWindow mPopupWindow;
@@ -33,32 +35,33 @@ public class MyTestActivity extends AppCompatActivity {
         mCustomMainBoard = findViewById(R.id.custom_main_board);
         mCustomSeekBar = findViewById(R.id.custom_seek_bar);
         mCustomSeekBar.synchronizeWithMainBoard(mCustomMainBoard);
+        mCustomCursor = findViewById(R.id.custom_cursor);
 
         mCustomMainBoard.addRow();
-        mCustomMainBoard.addChild(new CustomEditBoard(MyTestActivity.this),0);
-        CustomEditBoard customEditBoard=new CustomEditBoard(MyTestActivity.this);
+        mCustomMainBoard.addChild(new CustomEditBoard(MyTestActivity.this), 0);
+        CustomEditBoard customEditBoard = new CustomEditBoard(MyTestActivity.this);
         customEditBoard.setStart(6.0f);
         customEditBoard.setLength(2.0f);
-        mCustomMainBoard.addChild(customEditBoard,0);
+        mCustomMainBoard.addChild(customEditBoard, 0);
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-//                mCustomMainBoard.addRow();
-//                mCustomMainBoard.addRow();
-//                mCustomMainBoard.addChild(new CustomEditBoard(MyTestActivity.this),1);
-//                CustomEditBoard customEditBoard = new CustomEditBoard(MyTestActivity.this);
-//                customEditBoard.setStart(4.25f);
-//                customEditBoard.setLength(2);
-//                mCustomMainBoard.addChild(customEditBoard,1);
-//                mCustomMainBoard.addChild(new CustomEditBoard(MyTestActivity.this),2);
-//                mCustomMainBoard.addRow();
-//                customEditBoard = new CustomEditBoard(MyTestActivity.this);
-////                customEditBoard.setStart(1.0f);
-//                customEditBoard.setOctaveSum(5);
-//                mCustomMainBoard.addChild(customEditBoard,3);
+                mCustomMainBoard.addRow();
+                mCustomMainBoard.addRow();
+                mCustomMainBoard.addChild(new CustomEditBoard(MyTestActivity.this), 1);
+                CustomEditBoard customEditBoard = new CustomEditBoard(MyTestActivity.this);
+                customEditBoard.setStart(4.25f);
+                customEditBoard.setLength(2);
+                mCustomMainBoard.addChild(customEditBoard, 1);
+                mCustomMainBoard.addChild(new CustomEditBoard(MyTestActivity.this), 2);
+                mCustomMainBoard.addRow();
+                customEditBoard = new CustomEditBoard(MyTestActivity.this);
+                customEditBoard.setStart(1.0f);
+                customEditBoard.setOctaveSum(5);
+                mCustomMainBoard.addChild(customEditBoard, 3);
             }
-        },1000);
+        }, 1000);
 
         mPopupWindow = popupWindow();
         mCustomMainBoard.addPopupWindow(mPopupWindow);
@@ -69,10 +72,25 @@ public class MyTestActivity extends AppCompatActivity {
                 mCustomMainBoard.closeRow();
             }
         });
+//        cycle(0);
+    }
+
+    private void cycle(final float position) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mCustomCursor.setPosition(position);
+                if (position > 2000) {
+                    cycle(0);
+                } else {
+                    cycle(position + 0.4f);
+                }
+            }
+        }, 100);
     }
 
 
-    private PopupWindow popupWindow(){
+    private PopupWindow popupWindow() {
         final PopupWindow popupWindow = new PopupWindow(this); // inflet your layout or diynamic add view
         View view;
         LayoutInflater inflater = LayoutInflater.from(MyTestActivity.this);
@@ -92,11 +110,11 @@ public class MyTestActivity extends AppCompatActivity {
         return popupWindow;
     }
 
-    private class ClickListener implements View.OnClickListener{
+    private class ClickListener implements View.OnClickListener {
 
         @Override
         public void onClick(View v) {
-            switch (v.getId()){
+            switch (v.getId()) {
                 case R.id.popup_menu_edit:
                     mCustomMainBoard.openRow(mCustomMainBoard.getSelectedRow());
                     break;

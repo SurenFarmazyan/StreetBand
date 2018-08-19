@@ -88,35 +88,8 @@ public class CustomSeekBar extends View {
 
         mWidth = mLength*BIG_PADDING;
         mHeight = (int)(DEFAULT_HEIGHT * mDensity);
-//        init();
     }
 
-//    private void init(){
-//        mWidth = mLength*BIG_PADDING;
-//        mHeight = (int)(DEFAULT_HEIGHT * mDensity);
-//
-//        mBigLines = new float[mLength];
-//        int offsetX = 0;
-//        for(int i = 0; i < mBigLines.length; i++){
-//            mBigLines[i] = offsetX;
-//            offsetX += BIG_PADDING;
-//        }
-//
-//        mLines = new float[3*mLength];
-//        offsetX = 0;
-//        for(int i = 0; i < mLines.length; i++){
-//            if(i%3 == 0){
-//                offsetX += MEDIUM_PADDING;
-//            }
-//            mLines[i] = offsetX;
-//            offsetX += MEDIUM_PADDING;
-//        }
-//    }
-
-    public void scrollTo(int toX){
-        mScrollX = toX;
-        scrollTo(toX,0);
-    }
 
 
     public void synchronizeWithMainBoard(CustomMainBoard customMainBoard){
@@ -164,22 +137,6 @@ public class CustomSeekBar extends View {
                 offsetX += BIG_PADDING * mScaleX;
             }
          }
-        
-        
-        
-//        canvas.save();
-//        canvas.scale(mScaleX,1.0f);
-//        int till = (mPureScrollX + mVisibleWidth)/BIG_PADDING + 1;
-//        if(till > mBigLines.length)
-//            till = mBigLines.length;
-//        for (int i = mPureScrollX/BIG_PADDING; i < till; i++){
-//            canvas.drawLine(mBigLines[i],0, mBigLines[i],mHeight,mLinePaint);
-//            canvas.drawText(String.valueOf((i+1)),mBigLines[i],OFFSET_Y,mLinePaint);
-//        }
-//        for(int i = mPureScrollX/BIG_PADDING; i < 3*till;i++){
-//            canvas.drawLine(mLines[i],OFFSET_Y,mLines[i],mHeight,mLinePaint);
-//        }
-//        canvas.restore();
     }
 
 }

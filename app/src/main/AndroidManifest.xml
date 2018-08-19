@@ -10,13 +10,14 @@
         android:name=".App"
         android:theme="@style/AppTheme">
         <activity android:name=".activities.WelcomeActivity">
-
         </activity>
         <activity android:name=".activities.MyTestActivity"
             android:screenOrientation="sensorLandscape">
+        </activity>
+        <activity android:name=".activities.MyTestActivity_2"
+            android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
