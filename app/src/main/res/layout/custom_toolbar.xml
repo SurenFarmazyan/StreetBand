@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/custom_toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -9,9 +10,9 @@
 
 
     <ImageButton
-        android:id="@+id/add"
+        android:id="@+id/toolbar_add"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view_pager"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_view_pager"
         app:srcCompat="@drawable/ic_add"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -19,9 +20,9 @@
         android:background="@drawable/round_rect" />
 
     <ImageButton
-        android:id="@+id/view_pager"
-        app:layout_constraintStart_toEndOf="@+id/add"
-        app:layout_constraintTop_toTopOf="@+id/volume"
+        android:id="@+id/toolbar_view_pager"
+        app:layout_constraintStart_toEndOf="@+id/toolbar_add"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_volume"
         app:srcCompat="@drawable/ic_viewpager"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -29,9 +30,9 @@
         android:background="@drawable/round_rect" />
 
     <ImageButton
-        android:id="@+id/volume"
-        app:layout_constraintStart_toEndOf="@+id/view_pager"
-        app:layout_constraintTop_toTopOf="@+id/pause"
+        android:id="@+id/toolbar_volume"
+        app:layout_constraintStart_toEndOf="@+id/toolbar_view_pager"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_stop"
         app:srcCompat="@drawable/ic_volume_adjust"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -39,57 +40,76 @@
         android:background="@drawable/round_rect" />
 
     <ImageButton
-        android:id="@+id/pause"
-        app:layout_constraintEnd_toStartOf="@+id/play"
-        app:layout_constraintTop_toTopOf="@+id/play"
+        android:id="@+id/toolbar_stop"
+        app:layout_constraintEnd_toStartOf="@+id/toolbar_play"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_play"
         app:srcCompat="@drawable/ic_stop"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:background="@drawable/round_rect" />
 
     <ImageButton
-        android:id="@+id/play"
+        android:id="@+id/toolbar_play"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginBottom="4dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:background="@drawable/round_rect"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/settings"
-        app:layout_constraintStart_toEndOf="@+id/add"
+        app:layout_constraintEnd_toStartOf="@+id/toolbar_settings"
+        app:layout_constraintStart_toEndOf="@+id/toolbar_add"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_play" />
 
     <ImageButton
-        android:id="@+id/record"
-        app:layout_constraintStart_toEndOf="@+id/play"
-        app:layout_constraintTop_toTopOf="@+id/play"
+        android:id="@+id/toolbar_record"
+        app:layout_constraintStart_toEndOf="@+id/toolbar_play"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_play"
         app:srcCompat="@drawable/ic_record"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:background="@drawable/round_rect" />
 
-    <ImageView
-        android:id="@+id/toggle"
+    <CheckBox
+        android:id="@+id/toolbar_metronome"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginStart="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/record"
-        app:layout_constraintTop_toTopOf="@+id/record"
-        app:srcCompat="@drawable/ic_toggle" />
+        android:button="@drawable/ic_toggle"
+        android:buttonTint="@drawable/checkbox_states_color_list"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbar_play"
+        app:layout_constraintStart_toEndOf="@+id/toolbar_record"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_record" />
 
     <ImageView
-        android:id="@+id/settings"
+        android:id="@+id/toolbar_settings"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbar_metronome"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toggle"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_metronome"
         app:srcCompat="@drawable/ic_settings" />
+
+    <Button
+        android:id="@+id/toolbar_done"
+        android:layout_width="50dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/round_rect"
+        android:text="@string/done"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@+id/toolbar_settings"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.streetband.customViews.CustomSeekBar
+        android:id="@+id/toolbar_customSeekBar"
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:layout_marginStart="67dp"
+        android:layout_marginTop="4dp"
+        android:background="@android:color/black"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_play" />
 </android.support.constraint.ConstraintLayout>

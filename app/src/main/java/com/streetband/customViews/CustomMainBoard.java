@@ -36,6 +36,7 @@ public class CustomMainBoard extends ViewGroup {
     private int SMALL_PADDING = 5;
 
     private ScrollAndScaleListener mScrollAndScaleListener;
+    private ScrollY mScrollYListener;
     private PopupWindow mPopupWindow;
 
     //tools
@@ -182,10 +183,15 @@ public class CustomMainBoard extends ViewGroup {
         if (mScrollAndScaleListener != null) {
             mScrollAndScaleListener.scrolled(mScrollX, mScrollY);
         }
+
     }
 
     public void addScrollAndScaleListener(ScrollAndScaleListener scrollAndScaleListener) {
         mScrollAndScaleListener = scrollAndScaleListener;
+    }
+
+    public void addScrollYListener(ScrollY scrollY){
+        mScrollYListener = scrollY;
     }
 
     public void addPopupWindow(PopupWindow popupWindow) {
@@ -245,6 +251,12 @@ public class CustomMainBoard extends ViewGroup {
         if(mScrollAndScaleListener != null){
             mScrollAndScaleListener.scaleChanged(mScaleX,mScaleY);
         }
+    }
+
+    public void onScrollY(int distanceY){
+        mScrollY += distanceY;
+        mScrollY = Math.max(mMinScrollY, Math.min(mScrollY, mMaxScrollY));
+        scroll();
     }
 
     public void addRow() {
@@ -421,11 +433,16 @@ public class CustomMainBoard extends ViewGroup {
                 if (isDragging) {
                     isDragging = false;
                 }
+                if(mScrollYListener != null){
+                    mScrollYListener.isScrolling(false);
+                }
                 break;
         }
 
         return true;
     }
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //INNER CLASSES
@@ -441,6 +458,10 @@ public class CustomMainBoard extends ViewGroup {
                 mScrollX = Math.max(0, Math.min(mScrollX, mWidth - mVisibleArea.width()));
                 mScrollY = Math.max(mMinScrollY, Math.min(mScrollY, mMaxScrollY));
                 scroll();
+                if(mScrollYListener != null){
+                    mScrollYListener.isScrolling(true);
+                    mScrollYListener.onScrollY((int)distanceY);
+                }
                 return true;
             } else if (isDragging) {
                 if (isDraggingFromLeft) {
@@ -569,5 +590,10 @@ public class CustomMainBoard extends ViewGroup {
         void scrolled(int x, int y);
 
         void scaleChanged(float scaleX, float scaleY);
+    }
+
+    public interface ScrollY{
+        void onScrollY(int y);
+        void isScrolling(boolean isScrolling);
     }
 }

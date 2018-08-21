@@ -11,10 +11,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activities.WelcomeActivity">
         </activity>
-        <activity android:name=".activities.MyTestActivity"
-            android:screenOrientation="sensorLandscape">
-        </activity>
-        <activity android:name=".activities.MyTestActivity_2"
+        <activity android:name=".activities.GeneralActivity"
             android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

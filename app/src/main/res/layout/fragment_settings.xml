@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/SettingsTheme">
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/song_tact"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toBottomOf="@+id/settings_song_tact"
+            app:layout_constraintEnd_toStartOf="@+id/settings_song_tact"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/settings_song_tact" />
+
+        <com.streetband.customViews.CustomNumberController
+            android:id="@+id/settings_song_tact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:max_number="120"
+            app:min_number="60" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:background="@drawable/gradient_center_rect"
+            android:layout_height="20dp"
+            app:layout_constraintTop_toBottomOf="@+id/settings_song_tact" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/song_length"
+            android:textSize="30sp"
+            app:layout_constraintBottom_toBottomOf="@+id/settings_song_length"
+            app:layout_constraintEnd_toStartOf="@+id/settings_song_length"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/settings_song_length" />
+
+        <com.streetband.customViews.CustomNumberController
+            android:id="@+id/settings_song_length"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view"
+            app:max_number="30"
+            app:min_number="1" />
+
+
+    </android.support.constraint.ConstraintLayout>
+</ScrollView>
