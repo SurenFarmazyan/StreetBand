@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">StreetBand</string>
+
+
+    <!--tool bar-->
+    <string name="done">DONE</string>
+
+
+    <!--settings-->
+    <string name="song_tact">Song Tact</string>
+    <string name="warring_tact">The song tact must be within %1$d and %2$d</string>
+    <string name="song_length">Song Length</string>
+    <string name="warring_length">The song length must be within %1$d and %2$d</string>
+
+
+    <!--instruments-->
+    <string name="chinese_drums">Chinese Drums Kit</string>
+    <string name="grand_piano">Grand Piano</string>
+
+    <!--grand piano-->
+    <string name="scroll">Scroll</string>
 </resources>

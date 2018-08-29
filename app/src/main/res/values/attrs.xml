@@ -20,4 +20,14 @@
         <attr name="position" format="float"/>
         <attr name="show_line" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="CustomNavigationDrawer">
+        <attr name="drawerEndX" format="dimension"/>
+        <attr name="shadowRadius" format="dimension"/>
+    </declare-styleable>
+    <declare-styleable name="CustomNumberController">
+        <attr name="max_number" format="integer"/>
+        <attr name="min_number" format="integer"/>
+        <attr name="up_arrow" format="reference"/>
+        <attr name="down_arrow" format="reference"/>
+    </declare-styleable>
 </resources>

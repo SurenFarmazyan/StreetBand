@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.streetband.customViews.CustomNavigationDrawer xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/tools"
+    android:id="@+id/main_board_navigation_drawer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:drawerEndX="95dp"
+    app:shadowRadius="8dp">
+
+    <com.streetband.customViews.CustomMainBoard
+        android:id="@+id/main_board_custom_main_board"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#535353"
+        app:board_length="16">
+
+    </com.streetband.customViews.CustomMainBoard>
+
+    <com.streetband.customViews.CustomAddedInstrumentsList
+        android:id="@+id/main_bord_instruments_list"
+        android:layout_width="270dp"
+        android:layout_height="match_parent" />
+
+</com.streetband.customViews.CustomNavigationDrawer>

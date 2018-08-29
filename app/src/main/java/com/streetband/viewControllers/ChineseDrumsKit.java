@@ -12,7 +12,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.streetband.R;
-import com.streetband.activities.MyTestActivity_2;
 import com.streetband.utils.BounceInterpolator;
 
 import java.io.IOException;

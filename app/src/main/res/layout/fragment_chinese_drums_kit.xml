@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/chinese_drums_background">
+
+    <View
+        android:id="@+id/boom_3"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/chinese_drums_boom_3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.46"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.58000004" />
+
+
+    <View
+        android:id="@+id/boom_2"
+        android:layout_width="95dp"
+        android:layout_height="120dp"
+        android:background="@drawable/chinese_drums_boom_2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.79" />
+
+    <View
+        android:id="@+id/boom_1"
+        android:layout_width="90dp"
+        android:layout_height="110dp"
+        android:background="@drawable/chinese_drums_boom_1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.17"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <View
+        android:id="@+id/boom_4"
+        android:layout_width="120dp"
+        android:layout_height="130dp"
+        android:background="@drawable/chinese_drums_boom_4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.65"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.76" />
+
+
+    <View
+        android:id="@+id/boom_5"
+        android:layout_width="150dp"
+        android:layout_height="110dp"
+        android:background="@drawable/chinese_drums_boom_5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.87"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <View
+        android:id="@+id/big_boom"
+        android:layout_width="240dp"
+        android:layout_height="105dp"
+        android:background="@drawable/chinese_drums_big_boom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.46"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <View
+        android:id="@+id/big_clap"
+        android:layout_width="90dp"
+        android:layout_height="165dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/chinese_drums_big_clap"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.19999999" />
+
+
+    <View
+        android:id="@+id/clap_1"
+        android:layout_width="100dp"
+        android:layout_height="75dp"
+        android:background="@drawable/chinese_drums_clap_1"
+        app:layout_constraintBottom_toTopOf="@+id/clap_2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.37" />
+
+    <View
+        android:id="@+id/clap_1_mask"
+        android:layout_width="40dp"
+        android:layout_height="94dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clap_1" />
+
+    <View
+        android:id="@+id/clap_2"
+        android:layout_width="50dp"
+        android:layout_height="56dp"
+        android:background="@drawable/chinese_drums_clap_2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.62" />
+
+    <View
+        android:id="@+id/clap_2_mask"
+        android:layout_width="30dp"
+        android:layout_height="80dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clap_2" />
+
+    <View
+        android:id="@+id/big_clap_2"
+        android:layout_width="85dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/chinese_drums_big_clip_2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/big_clap"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.110000014" />
+
+    <View
+        android:id="@+id/tak_1"
+        android:layout_width="65dp"
+        android:layout_height="70dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@+id/tak_2"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/tak_2"
+        android:layout_width="47dp"
+        android:layout_height="68dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="27dp"
+        app:layout_constraintEnd_toStartOf="@+id/tak_3"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/tak_3"
+        android:layout_width="45dp"
+        android:layout_height="59dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toStartOf="@+id/tak_4"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/tak_4"
+        android:layout_width="44dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="47dp"
+        app:layout_constraintEnd_toStartOf="@+id/tak_5"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/tak_5"
+        android:layout_width="38dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toStartOf="@+id/clap_1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</android.support.constraint.ConstraintLayout>
