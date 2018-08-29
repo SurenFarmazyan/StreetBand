@@ -5,7 +5,7 @@
     android:id="@+id/main_board_navigation_drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:drawerEndX="75dp"
+    app:drawerEndX="95dp"
     app:shadowRadius="8dp">
 
     <com.streetband.customViews.CustomMainBoard
@@ -19,7 +19,7 @@
 
     <com.streetband.customViews.CustomAddedInstrumentsList
         android:id="@+id/main_bord_instruments_list"
-        android:layout_width="240dp"
+        android:layout_width="270dp"
         android:layout_height="match_parent" />
 
 </com.streetband.customViews.CustomNavigationDrawer>

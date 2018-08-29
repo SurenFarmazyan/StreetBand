@@ -5,33 +5,27 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.streetband.R;
 import com.streetband.customViews.CustomNumberController;
+import com.streetband.managers.SettingsManager;
 
 public class SettingsFragment extends Fragment{
-    public static final int MAX_TACT = 120;
-    public static final int MIN_TACT = 60;
 
-    public static final int MAX_SONG_LENGTH = 30;
-    public static final int MIN_SONG_LENGTH = 1;
 
     //view
     private CustomNumberController mTactCountController;
     private CustomNumberController mLengthCountController;
 
+    //managers
+    private SettingsManager mSettingsManger;
 
     //dynamic params
-    private int mSongTact = MIN_TACT;
-    private int mSongLength = MIN_SONG_LENGTH;
+    private int mSongLength;
+    private int mTact;
 
     @Nullable
     @Override
@@ -42,23 +36,28 @@ public class SettingsFragment extends Fragment{
         mTactCountController = root.findViewById(R.id.settings_song_tact);
         mLengthCountController = root.findViewById(R.id.settings_song_length);
 
-//        mTactCountController
+        //managers
+        mSettingsManger = SettingsManager.getInstance();
+        mSongLength = mSettingsManger.getSongLength();
+        mTact = mSettingsManger.getTact();
+        mTactCountController.setCurrentNumber(mTact);
+        mLengthCountController.setCurrentNumber(mSongLength);
 
         //song tact settings
         mTactCountController.addNumberChangedListener(new CustomNumberController.NumberChanged() {
             @Override
             public void onNumberChanged(int number) {
-                //TODO
+                mTact = number;
             }
 
             @Override
             public void onUpLimit() {
-                Snackbar.make(root,getString(R.string.warring_tact,MIN_TACT,MAX_TACT),Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(root,getString(R.string.warring_tact,mSettingsManger.getMinTact(),mSettingsManger.getMaxTact()),Snackbar.LENGTH_SHORT).show();
             }
 
             @Override
             public void onDownLimit() {
-                Snackbar.make(root,getString(R.string.warring_tact,MIN_TACT,MAX_TACT),Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(root,getString(R.string.warring_tact,mSettingsManger.getMinTact(),mSettingsManger.getMaxTact()),Snackbar.LENGTH_SHORT).show();
             }
         });
 
@@ -66,20 +65,29 @@ public class SettingsFragment extends Fragment{
         mLengthCountController.addNumberChangedListener(new CustomNumberController.NumberChanged() {
             @Override
             public void onNumberChanged(int number) {
-                //TODO
+                mSongLength = number;
             }
 
             @Override
             public void onUpLimit() {
-                Snackbar.make(root,getString(R.string.warring_length,MIN_SONG_LENGTH,MAX_SONG_LENGTH),Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(root,getString(R.string.warring_length,mSettingsManger.getMinSongLength(),mSettingsManger.getMaxSongLength()),Snackbar.LENGTH_SHORT).show();
             }
 
             @Override
             public void onDownLimit() {
-                Snackbar.make(root,getString(R.string.warring_length,MIN_SONG_LENGTH,MAX_SONG_LENGTH),Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(root,getString(R.string.warring_length,mSettingsManger.getMinSongLength(),mSettingsManger.getMaxSongLength()),Snackbar.LENGTH_SHORT).show();
             }
         });
 
         return root;
+    }
+
+    public void publishUpdates(){
+        if(mSongLength != mSettingsManger.getSongLength()){
+            mSettingsManger.setSongLength(mSongLength);
+        }
+        if(mTact != mSettingsManger.getTact()){
+            mSettingsManger.setTact(mTact);
+        }
     }
 }

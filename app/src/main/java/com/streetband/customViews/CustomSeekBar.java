@@ -18,9 +18,6 @@ import com.streetband.R;
 public class CustomSeekBar extends View {
     public static final String TAG = "CustomSeekBar";
     public static final int DEFAULT_HEIGHT = 30;
-    public static final int FLAG_3_4 = 1;
-    public static final int FLAG_4_4 = 2;
-    public static final int FLAG_6_8 = 3;
 
 
     //final params
@@ -48,8 +45,6 @@ public class CustomSeekBar extends View {
     private Rect mVisibleArea = new Rect();
     private float mVisibleWidth;
 
-    private float[] mBigLines;
-    private float[] mLines;
 
 
     public CustomSeekBar(Context context) {
@@ -86,7 +81,7 @@ public class CustomSeekBar extends View {
             }
         });
 
-        mWidth = mLength*BIG_PADDING;
+
         mHeight = (int)(DEFAULT_HEIGHT * mDensity);
     }
 
@@ -110,8 +105,20 @@ public class CustomSeekBar extends View {
         });
     }
 
+    public void setLength(int length){
+        mLength = length;
+        mWidth = mLength*BIG_PADDING;
+        invalidate();
+    }
+
+    public void updateVisibility(){
+        getGlobalVisibleRect(mVisibleArea);
+        mVisibleWidth = (int)(mVisibleArea.width()/mScaleX);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        mWidth = mLength*BIG_PADDING;
         setMeasuredDimension(mWidth,mHeight);
     }
 
@@ -122,7 +129,9 @@ public class CustomSeekBar extends View {
         int till = (int)((mPureScrollX + mVisibleWidth)/BIG_PADDING) + 1;
 
         Log.i(TAG,"start = " + start + " offsetX = " + offsetX + " till = " + till);
-
+        if(till > mLength){
+            till = mLength + 1;
+        }
          for(int i = start; i < till;i++){
              canvas.drawLine(offsetX,0,offsetX,mHeight,mLinePaint);
              canvas.drawText(String.valueOf(i),offsetX,OFFSET_Y,mLinePaint);

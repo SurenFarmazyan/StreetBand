@@ -286,7 +286,7 @@ public class CustomEditBoard extends View {
 
         for(int row : mSetMap.keySet()){
             Set<Note> set = mSetMap.get(row);
-            Log.i(TAG,"row = " + row + " set size " + set.size());
+//            Log.i(TAG,"row = " + row + " set size " + set.size());
             for( Note note : set){
                 canvas.drawRect( (note.start - mStart)*BIG_PADDING,MEDIUM_PADDING + mCoefficient*row*mScaleY,(note.end - mStart)*BIG_PADDING,MEDIUM_PADDING + mCoefficient*(row + 1)*mScaleY,mNotePaint);
                 if(isEnabled) {

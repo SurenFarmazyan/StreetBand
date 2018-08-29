@@ -1,15 +1,14 @@
 package com.streetband.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
@@ -17,11 +16,19 @@ import com.streetband.R;
 import com.streetband.activities.GeneralActivity;
 import com.streetband.customViews.CustomAddedInstrument;
 import com.streetband.customViews.CustomAddedInstrumentsList;
+import com.streetband.customViews.CustomChineseDrumsEdge;
 import com.streetband.customViews.CustomCursor;
 import com.streetband.customViews.CustomEditBoard;
 import com.streetband.customViews.CustomMainBoard;
 import com.streetband.customViews.CustomNavigationDrawer;
 import com.streetband.customViews.CustomSeekBar;
+import com.streetband.managers.InstrumentManager;
+import com.streetband.managers.SettingsManager;
+import com.streetband.models.Instrument;
+
+import java.util.List;
+
+import static com.streetband.customViews.CustomAddedInstrumentsList.*;
 
 public class MainBoardFragment extends Fragment {
 
@@ -35,108 +42,167 @@ public class MainBoardFragment extends Fragment {
     private CustomSeekBar mCustomSeekBar;
     private CustomCursor mCustomCursor;
 
+
+    //adapters
+    private InstrumentsAdapter mInstrumentsAdapter;
+
+    //managers
+    private InstrumentManager mInstrumentManager;
+    private SettingsManager mSettingsManger;
+
     //dynamic view
     private PopupWindow mPopupWindow;
 
 
     //dynamic params
     private boolean isMainBoardScrolling;
+    private boolean isActive;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        isActive = true;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        //managers
+        mSettingsManger = SettingsManager.getInstance();
+        mSettingsManger.addSettingsManagerListener(new SettingsManager.SettingsManagerListener() {
+            @Override
+            public void songLengthChanged(int songLength) {
+                if (getContext() != null)
+                    mCustomMainBoard.setLength(songLength);
+            }
+
+            @Override
+            public void tactChanged(int tact) {
+                //TODO
+            }
+        });
+
+        mInstrumentManager = InstrumentManager.getInstance();
+        mInstrumentManager.addInstrumentManagerListener(new InstrumentManager.InstrumentManagerListener() {
+            @Override
+            public void instrumentAdded(Instrument instrument,int position) {
+                mAddedInstrumentsList.notifyItemAdded();
+                mCustomMainBoard.addRow();
+                CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
+                customEditBoard.setOctaveSum(instrument.getOctaveSum());
+                customEditBoard.setStart(instrument.getStart());
+                customEditBoard.setLength(instrument.getLength());
+                mCustomMainBoard.addChild(customEditBoard,mCustomMainBoard.getRowCount()-1);
+            }
+
+            @Override
+            public void instrumentRemoved(int position) {
+                mAddedInstrumentsList.notifyItemRemoved();
+            }
+        });
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mCustomNavigationDrawer = (CustomNavigationDrawer) inflater.inflate(R.layout.fragment_main_board,container,false);
+        mCustomNavigationDrawer = (CustomNavigationDrawer) inflater.inflate(R.layout.fragment_main_board, container, false);
 
 
         //view binding
         mCustomMainBoard = mCustomNavigationDrawer.findViewById(R.id.main_board_custom_main_board);
         mAddedInstrumentsList = mCustomNavigationDrawer.findViewById(R.id.main_bord_instruments_list);
 
+        mInstrumentsAdapter = new InstrumentsAdapter(mInstrumentManager.getInstrumentsList());
+        mAddedInstrumentsList.setAdapter(mInstrumentsAdapter);
 
-        mAddedInstrumentsList.setLayoutManager(new LinearLayoutManager(getContext()));
-        mAddedInstrumentsList.setAdapter(new InstrumentsAdapter());
-        mCustomSeekBar = ((GeneralActivity)getActivity()).getSeekBar();
-        mCustomCursor = ((GeneralActivity)getActivity()).getCursor();
 
-        mCustomMainBoard.addRow();
-        mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 0);
-        CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
-        customEditBoard.setStart(6.0f);
-        customEditBoard.setLength(2.0f);
-        mCustomMainBoard.addChild(customEditBoard, 0);
+        mCustomSeekBar = ((GeneralActivity) getActivity()).getSeekBar();
+        mCustomCursor = ((GeneralActivity) getActivity()).getCursor();
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 1);
-                CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
-                customEditBoard.setStart(4.25f);
-                customEditBoard.setLength(2);
-                mCustomMainBoard.addChild(customEditBoard, 1);
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 2);
-                mCustomMainBoard.addRow();
-                customEditBoard = new CustomEditBoard(getContext());
-                customEditBoard.setStart(1.0f);
-                customEditBoard.setOctaveSum(5);
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 3);
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 4);
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 5);
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 6);
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 7);
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 8);
-                mCustomMainBoard.addRow();
-                mCustomMainBoard.addChild(new CustomEditBoard(getContext()), 9);
-            }
-        }, 1000);
 
         mPopupWindow = popupWindow();
         mCustomMainBoard.addPopupWindow(mPopupWindow);
+        mCustomMainBoard.setLength(mSettingsManger.getSongLength());
+        for(Instrument instrument : mInstrumentManager.getInstrumentsList()){
+            mCustomMainBoard.addRow();
+            CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
+            customEditBoard.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.MATCH_PARENT));
+            customEditBoard.setOctaveSum(instrument.getOctaveSum());
+            customEditBoard.setStart(instrument.getStart());
+            customEditBoard.setLength(instrument.getLength());
+            mCustomMainBoard.addChild(customEditBoard,mCustomMainBoard.getRowCount()-1);
+        }
 
-        mAddedInstrumentsList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+        mCustomSeekBar.synchronizeWithMainBoard(mCustomMainBoard);
+
+
+        return mCustomNavigationDrawer;
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+
+        //views change
+        mAddedInstrumentsList.addScrollListener(new ScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if(!isMainBoardScrolling)
-                    mCustomMainBoard.onScrollY(dy);
+            public void newScrollPosition(int scrollY, boolean fromInside) {
+                if(fromInside){
+                    mCustomMainBoard.setScrollY(scrollY);
+                }
+            }
+        });
+
+        mCustomMainBoard.addCollapseListener(new CustomMainBoard.CollapseListener() {
+            @Override
+            public void stateChanged(boolean expanded) {
+                if (expanded) {
+                    ((GeneralActivity) getActivity()).editBoardOpened();
+                }
             }
         });
 
         mCustomMainBoard.addScrollYListener(new CustomMainBoard.ScrollY() {
             @Override
-            public void onScrollY(int y) {
-//                if(y < 0){
-//                    y *= 1.05f;
-//                }
-                mAddedInstrumentsList.scrollBy(0,y);
-            }
-
-            @Override
-            public void isScrolling(boolean isScrolling) {
-                isMainBoardScrolling = isScrolling;
+            public void newPosition(int y, boolean fromInside) {
+                if(fromInside){
+                    mAddedInstrumentsList.setScrollY(y);
+                }
             }
         });
 
         mCustomNavigationDrawer.addNavigationListener(new CustomNavigationDrawer.NavigationListener() {
             @Override
-            public void navigationPosition(int position,int shadowRadius) {
+            public void navigationPosition(int position, int shadowRadius) {
                 mCustomSeekBar.setLeft(position - shadowRadius);
+                mCustomSeekBar.updateVisibility();
                 mCustomCursor.setLeft(position - shadowRadius);
+                mCustomMainBoard.updateVisibility();
             }
         });
+        mCustomCursor.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (isActive) {
+                    mCustomCursor.setLeft(mCustomNavigationDrawer.getPosition());
+                    mCustomSeekBar.setLeft(mCustomNavigationDrawer.getPosition());
+                }
+            }
+        });
+    }
 
-        mCustomSeekBar.synchronizeWithMainBoard(mCustomMainBoard);
-
-        return mCustomNavigationDrawer;
+    @Override
+    public void onPause() {
+        super.onPause();
+        isActive = false;
     }
 
     private PopupWindow popupWindow() {
-        final PopupWindow popupWindow = new PopupWindow(getContext()); // inflet your layout or diynamic add view
+        final PopupWindow popupWindow = new PopupWindow(getContext());
         View view;
         LayoutInflater inflater = LayoutInflater.from(getContext());
         view = inflater.inflate(R.layout.popup_window, null);
@@ -155,42 +221,88 @@ public class MainBoardFragment extends Fragment {
         return popupWindow;
     }
 
+    public void closeRow() {
+        mCustomMainBoard.closeRow();
+        CustomAddedInstrumentsList customAddedInstruments = new CustomAddedInstrumentsList(getContext());
+        customAddedInstruments.setAdapter(mInstrumentsAdapter);
+        mCustomNavigationDrawer.closeAndOpen(customAddedInstruments);
+    }
 
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //TODO
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////INNER CLASSES
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private class InstrumentHolder extends RecyclerView.ViewHolder{
 
-        public InstrumentHolder(View itemView) {
-            super(itemView);
+    private class InstrumentHolder extends CustomAddedInstrumentsList.Holder implements CustomAddedInstrument.AddedInstrumentListener{
+        private CustomAddedInstrument mInstrumentView;
+        private Instrument mInstrument;
+
+        public InstrumentHolder(View v) {
+            super(v);
+            mInstrumentView = (CustomAddedInstrument)v;
+            mInstrumentView.addAddedInstrumentListener(this);
+        }
+
+        public void binding(Instrument instrument){
+            mInstrument = instrument;
+            mInstrumentView.setVolume(instrument.getVolume());
+            mInstrumentView.setInstrumentIcon(instrument.getIcon());
+            mInstrumentView.setInstrumentName(instrument.getInstrumentName());
+            mInstrumentView.setMuted(instrument.isMuted());
+        }
+
+        @Override
+        public void volumeChanged(float volume) {
+            mInstrument.setVolume(volume);
+        }
+
+        @Override
+        public void muteChanged(boolean muted) {
+            mInstrument.setMuted(muted);
+        }
+
+        @Override
+        public void instrumentSelected() {
+            ((GeneralActivity)getActivity()).instrumentSelected(mInstrument.getInstrumentName());
         }
     }
 
 
 
-    private class InstrumentsAdapter extends RecyclerView.Adapter<InstrumentHolder>{
+    private class InstrumentsAdapter extends CustomAddedInstrumentsList.Adapter<InstrumentHolder>{
+        private List<Instrument> mInstruments;
 
+        public InstrumentsAdapter(List<Instrument> instruments) {
+            mInstruments = instruments;
+        }
 
-        @NonNull
         @Override
-        public InstrumentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public InstrumentHolder onCreateViewHolder() {
             CustomAddedInstrument customAddedInstrument = new CustomAddedInstrument(getContext());
+
+
             return new InstrumentHolder(customAddedInstrument);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull InstrumentHolder holder, int position) {
-
+        public void onBindViewHolder(InstrumentHolder holder, int position) {
+            holder.binding(mInstruments.get(position));
         }
 
         @Override
         public int getItemCount() {
-            return 10;
+            return mInstruments.size();
         }
     }
+
+
+
 
 
     private class ClickListener implements View.OnClickListener {
@@ -200,6 +312,9 @@ public class MainBoardFragment extends Fragment {
             switch (v.getId()) {
                 case R.id.popup_menu_edit:
                     mCustomMainBoard.openRow(mCustomMainBoard.getSelectedRow());
+                    CustomChineseDrumsEdge customChineseDrumsEdge = new CustomChineseDrumsEdge(getContext());
+                    customChineseDrumsEdge.synchronizeWithMainBoard(mCustomMainBoard);
+                    mCustomNavigationDrawer.closeAndOpen(customChineseDrumsEdge);
                     break;
 
                 case R.id.popup_menu_delete:

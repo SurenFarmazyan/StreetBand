@@ -88,7 +88,7 @@ public class CustomNumberController extends View{
     }
 
     public void setCurrentNumber(int number){
-        if(number > mMinNumber || number < mMinNumber){
+        if(number > mMaxNumber || number < mMinNumber){
             Log.e(TAG,"number " + number + " is out of bounds");
             return;
         }

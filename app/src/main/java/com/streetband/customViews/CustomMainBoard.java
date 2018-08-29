@@ -10,6 +10,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.support.animation.DynamicAnimation;
+import android.support.animation.FlingAnimation;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -35,12 +37,17 @@ public class CustomMainBoard extends ViewGroup {
     private int MEDIUM_PADDING = 20;
     private int SMALL_PADDING = 5;
 
+    //listeners
     private ScrollAndScaleListener mScrollAndScaleListener;
+    private ScrollAndScaleListener mScrollAndScaleListener2;
     private ScrollY mScrollYListener;
+    private CollapseListener mCollapseListener;
     private PopupWindow mPopupWindow;
 
     //tools
     private GestureDetector mGestureDetector;
+    private FlingAnimation mFlingY;
+    private FlingAnimation mFlingX;
     private ScaleGestureDetector mScaleDetector;
     private ViewTreeObserver mViewTreeObserver;
     private Paint mBoldLinePaint = new Paint();
@@ -101,6 +108,9 @@ public class CustomMainBoard extends ViewGroup {
     int x;
     int y;
     int row;
+    boolean hasTouch;
+    boolean isYFlinging;
+    boolean needToReLayout = true;
 
     public CustomMainBoard(Context context) {
         this(context, null);
@@ -117,8 +127,11 @@ public class CustomMainBoard extends ViewGroup {
 
         setWillNotDraw(false);
 
+        //tools
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         mGestureDetector = new GestureDetector(context, new GestureListener());
+        mFlingX = new FlingAnimation(this, DynamicAnimation.SCROLL_X);
+        mFlingY = new FlingAnimation(this, DynamicAnimation.SCROLL_Y);
         mViewTreeObserver = getViewTreeObserver();
         mViewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -149,7 +162,6 @@ public class CustomMainBoard extends ViewGroup {
     }
 
     private void measure() {
-        mWidth = (int) (mBoardLength * BIG_PADDING);
         mHeight = (int) ((mEditBoards.size() - 1) * (BIG_PADDING + SMALL_PADDING) + (BIG_PADDING - 2 * MEDIUM_PADDING) * mScaleY + 2 * MEDIUM_PADDING + SMALL_PADDING);
     }
 
@@ -183,11 +195,24 @@ public class CustomMainBoard extends ViewGroup {
         if (mScrollAndScaleListener != null) {
             mScrollAndScaleListener.scrolled(mScrollX, mScrollY);
         }
-
+        if(mScrollAndScaleListener2 != null){
+            mScrollAndScaleListener2.scrolled(mScrollX,mScrollY);
+        }
+        if(mScrollYListener != null){
+            mScrollYListener.newPosition(mScrollY,hasTouch || isYFlinging);
+        }
     }
 
     public void addScrollAndScaleListener(ScrollAndScaleListener scrollAndScaleListener) {
         mScrollAndScaleListener = scrollAndScaleListener;
+    }
+
+    public void addSecondScrollAndScaleListener(ScrollAndScaleListener scrollAndScaleListener){
+        mScrollAndScaleListener2 = scrollAndScaleListener;
+    }
+
+    public void addCollapseListener(CollapseListener collapseListener){
+        mCollapseListener = collapseListener;
     }
 
     public void addScrollYListener(ScrollY scrollY){
@@ -251,6 +276,9 @@ public class CustomMainBoard extends ViewGroup {
         if(mScrollAndScaleListener != null){
             mScrollAndScaleListener.scaleChanged(mScaleX,mScaleY);
         }
+        if(mScrollAndScaleListener2 != null){
+            mScrollAndScaleListener2.scaleChanged(mScaleX,mScaleY);
+        }
     }
 
     public void onScrollY(int distanceY){
@@ -266,6 +294,9 @@ public class CustomMainBoard extends ViewGroup {
             mMaxScrollY = mHeight - mVisibleArea.height();
         }
     }
+    public int getRowCount(){
+        return mEditBoards.size();
+    }
 
     public void addChild(CustomEditBoard customEditBoard, int row) {
         if (row >= mEditBoards.size()) {
@@ -273,7 +304,16 @@ public class CustomMainBoard extends ViewGroup {
         }
         mEditBoards.get(row).add(customEditBoard);
 
+        needToReLayout = true;
         addView(customEditBoard);
+    }
+
+    public void setLength(float length){
+        mBoardLength = length;
+        if(mPureScrollX > length*BIG_PADDING){
+            setScrollX(0);
+        }
+        requestLayout();
     }
 
     public int getSelectedRow(){
@@ -281,6 +321,7 @@ public class CustomMainBoard extends ViewGroup {
             mSelectedRow = -1;
         return mSelectedRow;
     }
+
 
     public void openRow(int row) {
         if(row < 0 || row >= mEditBoards.size() || isExpanded){
@@ -311,6 +352,9 @@ public class CustomMainBoard extends ViewGroup {
             public void onAnimationEnd(Animator animation) {
                 isExpanded = true;
                 mMaxScrollY = mMinScrollY + (int) ((BIG_PADDING - 2 * MEDIUM_PADDING) * mScaleY + 2 * MEDIUM_PADDING) - mVisibleArea.height();
+                if(mCollapseListener != null){
+                    mCollapseListener.stateChanged(true);
+                }
             }
         });
 
@@ -343,15 +387,30 @@ public class CustomMainBoard extends ViewGroup {
                 mMinScrollY = 0;
                 mMaxScrollY = mHeight - mVisibleArea.height();
                 mSelectedEditBoard = null;
+                if(mCollapseListener != null){
+                    mCollapseListener.stateChanged(false);
+                }
             }
         });
 
         animatorSet.start();
     }
 
+    public void updateVisibility(){
+        getGlobalVisibleRect(mVisibleArea);
+        mVisibleWidth = (int) (mVisibleArea.width() / mScaleX);
+//                mVisibleHeight = (int) (mVisibleArea.height() / mScaleY);
+        if(!isExpanded){
+            mMaxScrollY = mHeight - mVisibleArea.height();
+        }
+        invalidate();
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 //        Log.i(TAG,"onMeasure");
+        mWidth = (int) (mBoardLength * BIG_PADDING);
+
         measureChildren(widthMeasureSpec, heightMeasureSpec);
 
         setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
@@ -360,10 +419,13 @@ public class CustomMainBoard extends ViewGroup {
     @Override
     protected void onLayout(boolean b, int i, int i1, int i2, int i3) {
 //        Log.i(TAG,"onLayout");
-        for (int j = 0; j < mEditBoards.size(); j++) {
-            for (int k = 0; k < mEditBoards.get(j).size(); k++) {
-                CustomEditBoard v = mEditBoards.get(j).get(k);
-                v.layout((int)(v.getStart()*BIG_PADDING),j*(BIG_PADDING + SMALL_PADDING),(int)(v.getEnd()*BIG_PADDING),j*(BIG_PADDING + SMALL_PADDING) + BIG_PADDING);
+        if(needToReLayout) {
+            needToReLayout = false;
+            for (int j = 0; j < mEditBoards.size(); j++) {
+                for (int k = 0; k < mEditBoards.get(j).size(); k++) {
+                    CustomEditBoard v = mEditBoards.get(j).get(k);
+                    v.layout((int) (v.getStart() * BIG_PADDING), j * (BIG_PADDING + SMALL_PADDING), (int) (v.getEnd() * BIG_PADDING), j * (BIG_PADDING + SMALL_PADDING) + BIG_PADDING);
+                }
             }
         }
     }
@@ -388,7 +450,7 @@ public class CustomMainBoard extends ViewGroup {
         float offsetX =  start*BIG_PADDING*mScaleX;
         int till = (int)((mPureScrollX + mVisibleWidth)/BIG_PADDING) + 1;
 
-        Log.i(TAG,"start = " + start + " offsetX = " + offsetX + " till = " + till);
+//        Log.i(TAG,"start = " + start + " offsetX = " + offsetX + " till = " + till);
 
         for (int i = start; i < till; i++) {
             canvas.drawLine(offsetX, mScrollY, offsetX, mScrollY + mVisibleArea.height(), mBoldLinePaint);
@@ -414,8 +476,10 @@ public class CustomMainBoard extends ViewGroup {
         mScaleDetector.onTouchEvent(event);
         mGestureDetector.onTouchEvent(event);
 
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                hasTouch = true;
                 if (mSelectedEditBoard != null && !isExpanded) {
                     if (y < mSelectedEditBoard.getTop() || y > mSelectedEditBoard.getBottom()) {
                         return true;
@@ -433,9 +497,7 @@ public class CustomMainBoard extends ViewGroup {
                 if (isDragging) {
                     isDragging = false;
                 }
-                if(mScrollYListener != null){
-                    mScrollYListener.isScrolling(false);
-                }
+                hasTouch = false;
                 break;
         }
 
@@ -458,10 +520,6 @@ public class CustomMainBoard extends ViewGroup {
                 mScrollX = Math.max(0, Math.min(mScrollX, mWidth - mVisibleArea.width()));
                 mScrollY = Math.max(mMinScrollY, Math.min(mScrollY, mMaxScrollY));
                 scroll();
-                if(mScrollYListener != null){
-                    mScrollYListener.isScrolling(true);
-                    mScrollYListener.onScrollY((int)distanceY);
-                }
                 return true;
             } else if (isDragging) {
                 if (isDraggingFromLeft) {
@@ -480,6 +538,30 @@ public class CustomMainBoard extends ViewGroup {
                 return true;
             }
             return super.onScroll(e1, e2, distanceX, distanceY);
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            if(!isScaling && !isDragging) {
+                if(e1.getX() <= mWidth - mVisibleArea.width()) {
+                    mFlingX.setStartVelocity(-velocityX).setMinValue(0).setMaxValue(mWidth - mVisibleArea.width()).start();
+                }
+                if(e1.getY() <= mMaxScrollY) {
+                    isYFlinging = true;
+                    mFlingY.setStartVelocity(-velocityY).setMinValue(0).setMaxValue(mMaxScrollY).addEndListener(new DynamicAnimation.OnAnimationEndListener() {
+                        @Override
+                        public void onAnimationEnd(DynamicAnimation animation, boolean canceled, float value, float velocity) {
+                            if(!canceled){
+                                isYFlinging = false;
+                            }
+                        }
+                    }).start();
+
+                }
+            }
+
+
+            return super.onFling(e1, e2, velocityX, velocityY);
         }
 
         @Override
@@ -566,6 +648,9 @@ public class CustomMainBoard extends ViewGroup {
             if (mScrollAndScaleListener != null) {
                 mScrollAndScaleListener.scaleChanged(mScaleX, mScaleY);
             }
+            if (mScrollAndScaleListener2 != null) {
+                mScrollAndScaleListener2.scaleChanged(mScaleX, mScaleY);
+            }
 
             return true;
         }
@@ -593,7 +678,10 @@ public class CustomMainBoard extends ViewGroup {
     }
 
     public interface ScrollY{
-        void onScrollY(int y);
-        void isScrolling(boolean isScrolling);
+        void newPosition(int y,boolean fromInside);
+    }
+
+    public interface CollapseListener{
+        void stateChanged(boolean expanded);
     }
 }

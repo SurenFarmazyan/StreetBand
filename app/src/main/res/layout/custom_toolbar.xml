@@ -12,7 +12,7 @@
     <ImageButton
         android:id="@+id/toolbar_add"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_view_pager"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_add_instrument"
         app:srcCompat="@drawable/ic_add"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -20,24 +20,25 @@
         android:background="@drawable/round_rect" />
 
     <ImageButton
-        android:id="@+id/toolbar_view_pager"
-        app:layout_constraintStart_toEndOf="@+id/toolbar_add"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_volume"
-        app:srcCompat="@drawable/ic_viewpager"
+        android:id="@+id/toolbar_add_instrument"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="16dp"
-        android:background="@drawable/round_rect" />
+        android:background="@drawable/round_rect"
+        app:layout_constraintStart_toEndOf="@+id/toolbar_add"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_stop"
+        app:srcCompat="@drawable/ic_viewpager" />
 
     <ImageButton
-        android:id="@+id/toolbar_volume"
-        app:layout_constraintStart_toEndOf="@+id/toolbar_view_pager"
+        android:id="@+id/toolbar_main_board"
+        app:layout_constraintStart_toEndOf="@+id/toolbar_add_instrument"
         app:layout_constraintTop_toTopOf="@+id/toolbar_stop"
-        app:srcCompat="@drawable/ic_volume_adjust"
+        app:srcCompat="@drawable/v_main_board"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="2dp"
-        android:background="@drawable/round_rect" />
+        android:background="@drawable/round_rect"
+        android:visibility="gone"/>
 
     <ImageButton
         android:id="@+id/toolbar_stop"
@@ -107,7 +108,6 @@
         android:id="@+id/toolbar_customSeekBar"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
-        android:layout_marginStart="67dp"
         android:layout_marginTop="4dp"
         android:background="@android:color/black"
         app:layout_constraintStart_toStartOf="parent"

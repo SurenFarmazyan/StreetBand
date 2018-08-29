@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -26,6 +27,8 @@ public class CustomAddedInstrument extends View {
     private Paint mDynamicPaint = new Paint();
     private Paint mBackPaint = new Paint();
     private Paint mWhitTPaint = new Paint();
+    private Paint mTextPaint = new Paint();
+
     private Path mDynamicPath = new Path();
     private Path mHeadphonePath = new Path();
 
@@ -43,6 +46,9 @@ public class CustomAddedInstrument extends View {
     //    dynamic params
     private int mHeight;
     private int mWidth;
+
+    private float mDownX;
+    private float mDownY;
 
     private float mCircleX;
 
@@ -78,11 +84,14 @@ public class CustomAddedInstrument extends View {
         mBackPaint.setColor(Color.GREEN);
         mWhitTPaint.setColor(Color.parseColor("#80FFFFFF"));
 
+        mTextPaint.setColor(Color.WHITE);
+        mTextPaint.setTextSize(MEDIUM_PADDING + 2 * SMALL_PADDING);
+
         BIG_PADDING *= mDensity;
         MEDIUM_PADDING *= mDensity;
         SMALL_PADDING *= mDensity;
 
-        mWidth = 3 * BIG_PADDING;
+        mWidth = 3 * BIG_PADDING + MEDIUM_PADDING;
         mHeight = BIG_PADDING + SMALL_PADDING;
 
         mCircleX = BIG_PADDING + SMALL_PADDING;
@@ -93,7 +102,7 @@ public class CustomAddedInstrument extends View {
 
     private void prepareDynamicPath() {
         mDynamicPath.reset();
-        mDynamicPath.moveTo(2 * SMALL_PADDING, MEDIUM_PADDING + SMALL_PADDING);
+        mDynamicPath.moveTo(2 * SMALL_PADDING, 2 * MEDIUM_PADDING - SMALL_PADDING);
         mDynamicPath.rLineTo(SMALL_PADDING, 0);
         mDynamicPath.rLineTo(SMALL_PADDING, -SMALL_PADDING);
         mDynamicPath.rLineTo(0, MEDIUM_PADDING);
@@ -101,19 +110,19 @@ public class CustomAddedInstrument extends View {
         mDynamicPath.rLineTo(-SMALL_PADDING, 0);
         mDynamicPath.close();
 
-        mDynamicPath.moveTo(2 * SMALL_PADDING, 2 * MEDIUM_PADDING);
+        mDynamicPath.moveTo(2 * SMALL_PADDING, 2 * MEDIUM_PADDING + 2 * SMALL_PADDING);
         mDynamicPath.rLineTo(3 * SMALL_PADDING, -MEDIUM_PADDING);
     }
 
     private void prepareHeadphonePath() {
         mHeadphonePath.reset();
 
-        mHeadphonePath.addRoundRect(2 * MEDIUM_PADDING + 2 * mDensity, 2 * MEDIUM_PADDING - (int) (1.5 * SMALL_PADDING), 2 * MEDIUM_PADDING + SMALL_PADDING, 2 * MEDIUM_PADDING + (int) (0.5 * SMALL_PADDING), 2 * mDensity, 2 * mDensity, Path.Direction.CW);
-        mHeadphonePath.addRoundRect(3 * MEDIUM_PADDING - SMALL_PADDING, 2 * MEDIUM_PADDING - (int) (1.5 * SMALL_PADDING), 3 * MEDIUM_PADDING - 2 * mDensity, 2 * MEDIUM_PADDING + (int) (0.5 * SMALL_PADDING), 2 * mDensity, 2 * mDensity, Path.Direction.CW);
+        mHeadphonePath.addRoundRect(2 * MEDIUM_PADDING + 2 * mDensity, 2 * MEDIUM_PADDING, 2 * MEDIUM_PADDING + SMALL_PADDING, 2 * MEDIUM_PADDING + (int) (2.5 * SMALL_PADDING), 2 * mDensity, 2 * mDensity, Path.Direction.CW);
+        mHeadphonePath.addRoundRect(3 * MEDIUM_PADDING - SMALL_PADDING, 2 * MEDIUM_PADDING, 3 * MEDIUM_PADDING - 2 * mDensity, 2 * MEDIUM_PADDING + (int) (2.5 * SMALL_PADDING), 2 * mDensity, 2 * mDensity, Path.Direction.CW);
 
-        mHeadphonePath.moveTo(2 * MEDIUM_PADDING, 2 * MEDIUM_PADDING);
+        mHeadphonePath.moveTo(2 * MEDIUM_PADDING, 2 * MEDIUM_PADDING + 2 * SMALL_PADDING);
         mHeadphonePath.rLineTo(0, -2 * SMALL_PADDING);
-        mHeadphonePath.arcTo(2 * MEDIUM_PADDING, MEDIUM_PADDING, 3 * MEDIUM_PADDING, 2 * MEDIUM_PADDING, 180, 180, true);
+        mHeadphonePath.arcTo(2 * MEDIUM_PADDING, MEDIUM_PADDING + 2 * SMALL_PADDING, 3 * MEDIUM_PADDING, 2 * MEDIUM_PADDING + 2 * SMALL_PADDING, 180, 180, true);
         mHeadphonePath.rLineTo(0, 2 * SMALL_PADDING);
     }
 
@@ -124,12 +133,41 @@ public class CustomAddedInstrument extends View {
 
     public void setInstrumentIcon(Bitmap instrumentIcon) {
         mInstrumentIcon = instrumentIcon;
+        //TODO
         invalidate();
     }
 
     public void setVolume(float volume) {
-        mCircleX = volume * 4 * MEDIUM_PADDING + 4 * MEDIUM_PADDING + SMALL_PADDING;
+        mCircleX = volume * (4 * MEDIUM_PADDING - 2 * SMALL_PADDING) + 4 * MEDIUM_PADDING + SMALL_PADDING;
         invalidate();
+    }
+
+    public void setMuted(boolean toMute) {
+        isMuted = toMute;
+        invalidate();
+    }
+
+    public void addAddedInstrumentListener(AddedInstrumentListener addedInstrumentListener) {
+        mAddedInstrumentListener = addedInstrumentListener;
+    }
+
+    public void onSingleTapUp(float x, float y){
+        if (x > SMALL_PADDING && x < SMALL_PADDING + MEDIUM_PADDING) {
+            if (isMuted) {
+                mDynamicPaint.setColor(UNCHECKED_COLOR);
+            } else {
+                mDynamicPaint.setColor(CHECKED_COLOR);
+            }
+            isMuted = !isMuted;
+            if (mAddedInstrumentListener != null) {
+                mAddedInstrumentListener.muteChanged(isMuted);
+            }
+            invalidate();
+        } else if (x > 9 * MEDIUM_PADDING && x < 9 * MEDIUM_PADDING + BIG_PADDING) {
+            if (mAddedInstrumentListener != null) {
+                mAddedInstrumentListener.instrumentSelected();
+            }
+        }
     }
 
     @Override
@@ -141,16 +179,6 @@ public class CustomAddedInstrument extends View {
                 float y = event.getY();
                 if (x > mCircleX - 2 * SMALL_PADDING && x < mCircleX + 2 * SMALL_PADDING && y > MEDIUM_PADDING + SMALL_PADDING && y < 2 * MEDIUM_PADDING) {
                     return true;
-                } else if (x > SMALL_PADDING && x < SMALL_PADDING + MEDIUM_PADDING) {
-                    if (isMuted) {
-                        mDynamicPaint.setColor(UNCHECKED_COLOR);
-                    } else {
-                        mDynamicPaint.setColor(CHECKED_COLOR);
-                    }
-                    isMuted = !isMuted;
-                    if(mAddedInstrumentListener != null){
-                        mAddedInstrumentListener.muteChanged(isMuted);
-                    }
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -161,10 +189,9 @@ public class CustomAddedInstrument extends View {
                 }
                 invalidate();
                 return true;
-
         }
 
-        return super.onTouchEvent(event);
+        return false;
     }
 
     @Override
@@ -174,17 +201,17 @@ public class CustomAddedInstrument extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawText(mInstrumentName, SMALL_PADDING, MEDIUM_PADDING, mStrokePaint);
+        canvas.drawText(mInstrumentName, SMALL_PADDING, 3 * SMALL_PADDING, mTextPaint);
         canvas.drawPath(mDynamicPath, mDynamicPaint);
         canvas.drawPath(mHeadphonePath, mStrokePaint);
 
-        canvas.drawRoundRect(4 * MEDIUM_PADDING, MEDIUM_PADDING + SMALL_PADDING, 8 * MEDIUM_PADDING, 2 * MEDIUM_PADDING - SMALL_PADDING, 5 * mDensity, 5 * mDensity, mBackPaint);
-        canvas.drawCircle(mCircleX, MEDIUM_PADDING + 2 * SMALL_PADDING, 2 * SMALL_PADDING, mStrokePaint);
-        canvas.drawCircle(mCircleX, MEDIUM_PADDING + 2 * SMALL_PADDING, 2 * SMALL_PADDING, mWhitTPaint);
+        canvas.drawRoundRect(4 * MEDIUM_PADDING, 2 * MEDIUM_PADDING - SMALL_PADDING, 8 * MEDIUM_PADDING, 2 * MEDIUM_PADDING + SMALL_PADDING, 5 * mDensity, 5 * mDensity, mBackPaint);
+        canvas.drawCircle(mCircleX, 2 * MEDIUM_PADDING, 2 * SMALL_PADDING, mStrokePaint);
+        canvas.drawCircle(mCircleX, 2 * MEDIUM_PADDING, 2 * SMALL_PADDING, mWhitTPaint);
 
-        canvas.drawLine(BIG_PADDING, 2 * SMALL_PADDING, 4 * MEDIUM_PADDING + 2 * SMALL_PADDING, 2 * SMALL_PADDING, mStrokePaint);
-        canvas.drawLine(2 * BIG_PADDING - SMALL_PADDING, 2 * SMALL_PADDING, 2 * BIG_PADDING + SMALL_PADDING, 2 * SMALL_PADDING, mStrokePaint);
-        canvas.drawLine(2 * BIG_PADDING, SMALL_PADDING, 2 * BIG_PADDING, 3 * SMALL_PADDING, mStrokePaint);
+        canvas.drawLine(BIG_PADDING, MEDIUM_PADDING, 4 * MEDIUM_PADDING + 2 * SMALL_PADDING, MEDIUM_PADDING, mStrokePaint);
+        canvas.drawLine(2 * BIG_PADDING - SMALL_PADDING, MEDIUM_PADDING, 2 * BIG_PADDING + SMALL_PADDING, MEDIUM_PADDING, mStrokePaint);
+        canvas.drawLine(2 * BIG_PADDING, MEDIUM_PADDING - SMALL_PADDING, 2 * BIG_PADDING, MEDIUM_PADDING + SMALL_PADDING, mStrokePaint);
 
         if (mInstrumentIcon != null) {
             canvas.drawBitmap(mInstrumentIcon, 9 * MEDIUM_PADDING, SMALL_PADDING, mBackPaint);
@@ -200,6 +227,6 @@ public class CustomAddedInstrument extends View {
 
         void muteChanged(boolean muted);
 
-        void instrumentSelceted();
+        void instrumentSelected();
     }
 }

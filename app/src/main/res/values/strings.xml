@@ -11,4 +11,12 @@
     <string name="warring_tact">The song tact must be within %1$d and %2$d</string>
     <string name="song_length">Song Length</string>
     <string name="warring_length">The song length must be within %1$d and %2$d</string>
+
+
+    <!--instruments-->
+    <string name="chinese_drums">Chinese Drums Kit</string>
+    <string name="grand_piano">Grand Piano</string>
+
+    <!--grand piano-->
+    <string name="scroll">Scroll</string>
 </resources>
