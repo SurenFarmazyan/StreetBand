@@ -2,6 +2,9 @@ package com.streetband.managers;
 
 import android.content.Context;
 
+import com.streetband.customViews.CustomChineseDrumsEdge;
+import com.streetband.customViews.CustomPianoEdge;
+import com.streetband.customViews.Edge;
 import com.streetband.models.ChineseDrumsKit;
 import com.streetband.models.GrandPiano;
 import com.streetband.models.Instrument;
@@ -53,6 +56,17 @@ public class InstrumentManager {
                 addInstrument(new GrandPiano(context,true));
                 break;
         }
+    }
+
+    public Edge getInstrumentEdge(Context context,int row){
+        Edge edge = null;
+        Instrument instrument = mInstruments.get(row);
+        if(instrument instanceof GrandPiano){
+            edge = new CustomPianoEdge(context);
+        }else if(instrument instanceof ChineseDrumsKit){
+            edge = new CustomChineseDrumsEdge(context);
+        }
+        return edge;
     }
 
     public void removeInstrument(int position){

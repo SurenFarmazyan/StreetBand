@@ -203,6 +203,10 @@ public class CustomMainBoard extends ViewGroup {
         }
     }
 
+    public int getMinScrollY(){
+        return mMinScrollY;
+    }
+
     public void addScrollAndScaleListener(ScrollAndScaleListener scrollAndScaleListener) {
         mScrollAndScaleListener = scrollAndScaleListener;
     }
@@ -548,7 +552,7 @@ public class CustomMainBoard extends ViewGroup {
                 }
                 if(e1.getY() <= mMaxScrollY) {
                     isYFlinging = true;
-                    mFlingY.setStartVelocity(-velocityY).setMinValue(0).setMaxValue(mMaxScrollY).addEndListener(new DynamicAnimation.OnAnimationEndListener() {
+                    mFlingY.setStartVelocity(-velocityY).setMinValue(mMinScrollY).setMaxValue(mMaxScrollY).addEndListener(new DynamicAnimation.OnAnimationEndListener() {
                         @Override
                         public void onAnimationEnd(DynamicAnimation animation, boolean canceled, float value, float velocity) {
                             if(!canceled){
