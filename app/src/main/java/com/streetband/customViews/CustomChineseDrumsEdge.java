@@ -12,7 +12,7 @@ import com.streetband.R;
 import com.streetband.utils.BitmapOperations;
 import com.streetband.utils.Density;
 
-public class CustomChineseDrumsEdge extends View {
+public class CustomChineseDrumsEdge extends View implements Edge{
     private static final String TAG = "CustomChineseDrumsEdge";
     private static final int OCTAVE_SUM = 2;
 
@@ -34,6 +34,7 @@ public class CustomChineseDrumsEdge extends View {
     private int mHeight;
 
     private int mScrollY = 0;
+    private int mStartScrollY = 0;
 
     private float mScaleY = 1.0f;
     private float mScaleCoefficient = 1.0f;
@@ -85,11 +86,12 @@ public class CustomChineseDrumsEdge extends View {
         super.setScrollY(value);
     }
 
+    @Override
     public void synchronizeWithMainBoard(CustomMainBoard customMainBoard){
         customMainBoard.addSecondScrollAndScaleListener(new CustomMainBoard.ScrollAndScaleListener() {
             @Override
             public void scrolled(int x, int y) {
-                setScrollY(y);
+                setScrollY(y - mStartScrollY);
             }
 
             @Override
@@ -105,6 +107,11 @@ public class CustomChineseDrumsEdge extends View {
                 invalidate();
             }
         });
+    }
+
+    @Override
+    public void setStartScrollY(int scrollY) {
+        mStartScrollY = scrollY;
     }
 
     @Override

@@ -22,6 +22,7 @@ import com.streetband.customViews.CustomEditBoard;
 import com.streetband.customViews.CustomMainBoard;
 import com.streetband.customViews.CustomNavigationDrawer;
 import com.streetband.customViews.CustomSeekBar;
+import com.streetband.customViews.Edge;
 import com.streetband.managers.InstrumentManager;
 import com.streetband.managers.SettingsManager;
 import com.streetband.models.Instrument;
@@ -85,14 +86,14 @@ public class MainBoardFragment extends Fragment {
         mInstrumentManager = InstrumentManager.getInstance();
         mInstrumentManager.addInstrumentManagerListener(new InstrumentManager.InstrumentManagerListener() {
             @Override
-            public void instrumentAdded(Instrument instrument,int position) {
+            public void instrumentAdded(Instrument instrument, int position) {
                 mAddedInstrumentsList.notifyItemAdded();
                 mCustomMainBoard.addRow();
                 CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
                 customEditBoard.setOctaveSum(instrument.getOctaveSum());
                 customEditBoard.setStart(instrument.getStart());
                 customEditBoard.setLength(instrument.getLength());
-                mCustomMainBoard.addChild(customEditBoard,mCustomMainBoard.getRowCount()-1);
+                mCustomMainBoard.addChild(customEditBoard, mCustomMainBoard.getRowCount() - 1);
             }
 
             @Override
@@ -123,14 +124,14 @@ public class MainBoardFragment extends Fragment {
         mPopupWindow = popupWindow();
         mCustomMainBoard.addPopupWindow(mPopupWindow);
         mCustomMainBoard.setLength(mSettingsManger.getSongLength());
-        for(Instrument instrument : mInstrumentManager.getInstrumentsList()){
+        for (Instrument instrument : mInstrumentManager.getInstrumentsList()) {
             mCustomMainBoard.addRow();
             CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
-            customEditBoard.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.MATCH_PARENT));
+            customEditBoard.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
             customEditBoard.setOctaveSum(instrument.getOctaveSum());
             customEditBoard.setStart(instrument.getStart());
             customEditBoard.setLength(instrument.getLength());
-            mCustomMainBoard.addChild(customEditBoard,mCustomMainBoard.getRowCount()-1);
+            mCustomMainBoard.addChild(customEditBoard, mCustomMainBoard.getRowCount() - 1);
         }
 
 
@@ -151,7 +152,7 @@ public class MainBoardFragment extends Fragment {
         mAddedInstrumentsList.addScrollListener(new ScrollListener() {
             @Override
             public void newScrollPosition(int scrollY, boolean fromInside) {
-                if(fromInside){
+                if (fromInside) {
                     mCustomMainBoard.setScrollY(scrollY);
                 }
             }
@@ -169,7 +170,7 @@ public class MainBoardFragment extends Fragment {
         mCustomMainBoard.addScrollYListener(new CustomMainBoard.ScrollY() {
             @Override
             public void newPosition(int y, boolean fromInside) {
-                if(fromInside){
+                if (fromInside) {
                     mAddedInstrumentsList.setScrollY(y);
                 }
             }
@@ -239,17 +240,17 @@ public class MainBoardFragment extends Fragment {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    private class InstrumentHolder extends CustomAddedInstrumentsList.Holder implements CustomAddedInstrument.AddedInstrumentListener{
+    private class InstrumentHolder extends CustomAddedInstrumentsList.Holder implements CustomAddedInstrument.AddedInstrumentListener {
         private CustomAddedInstrument mInstrumentView;
         private Instrument mInstrument;
 
         public InstrumentHolder(View v) {
             super(v);
-            mInstrumentView = (CustomAddedInstrument)v;
+            mInstrumentView = (CustomAddedInstrument) v;
             mInstrumentView.addAddedInstrumentListener(this);
         }
 
-        public void binding(Instrument instrument){
+        public void binding(Instrument instrument) {
             mInstrument = instrument;
             mInstrumentView.setVolume(instrument.getVolume());
             mInstrumentView.setInstrumentIcon(instrument.getIcon());
@@ -269,13 +270,12 @@ public class MainBoardFragment extends Fragment {
 
         @Override
         public void instrumentSelected() {
-            ((GeneralActivity)getActivity()).instrumentSelected(mInstrument.getInstrumentName());
+            ((GeneralActivity) getActivity()).instrumentSelected(mInstrument.getInstrumentName());
         }
     }
 
 
-
-    private class InstrumentsAdapter extends CustomAddedInstrumentsList.Adapter<InstrumentHolder>{
+    private class InstrumentsAdapter extends CustomAddedInstrumentsList.Adapter<InstrumentHolder> {
         private List<Instrument> mInstruments;
 
         public InstrumentsAdapter(List<Instrument> instruments) {
@@ -302,19 +302,18 @@ public class MainBoardFragment extends Fragment {
     }
 
 
-
-
-
+    //popup window
     private class ClickListener implements View.OnClickListener {
 
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.popup_menu_edit:
+                    Edge edge = mInstrumentManager.getInstrumentEdge(getContext(), mCustomMainBoard.getSelectedRow());
                     mCustomMainBoard.openRow(mCustomMainBoard.getSelectedRow());
-                    CustomChineseDrumsEdge customChineseDrumsEdge = new CustomChineseDrumsEdge(getContext());
-                    customChineseDrumsEdge.synchronizeWithMainBoard(mCustomMainBoard);
-                    mCustomNavigationDrawer.closeAndOpen(customChineseDrumsEdge);
+                    edge.synchronizeWithMainBoard(mCustomMainBoard);
+                    edge.setStartScrollY(mCustomMainBoard.getMinScrollY());
+                    mCustomNavigationDrawer.closeAndOpen((View)edge);
                     break;
 
                 case R.id.popup_menu_delete:

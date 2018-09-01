@@ -17,6 +17,8 @@ public class CustomNavigationDrawer extends ViewGroup {
 
     //final params
     private float mDensity;
+    private int BIG_PADDING = 80;
+    private int SMALL_PADDING = 5;
     private float DRAGGING_SPACE = 20;
 
 
@@ -35,6 +37,7 @@ public class CustomNavigationDrawer extends ViewGroup {
     private float mStartX;
     private int mDrawerOldX;
     private int mDrawerEndX;
+
 
     private boolean isDragging;
 
@@ -55,6 +58,8 @@ public class CustomNavigationDrawer extends ViewGroup {
 
         mDrawerEndX = mMinDrawerEndX;
         DRAGGING_SPACE *= mDensity;
+        BIG_PADDING *= mDensity;
+        SMALL_PADDING *= mDensity;
     }
 
 
