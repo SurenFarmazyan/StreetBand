@@ -8,6 +8,7 @@ import com.streetband.customViews.Edge;
 import com.streetband.models.ChineseDrumsKit;
 import com.streetband.models.GrandPiano;
 import com.streetband.models.Instrument;
+import com.streetband.models.Track;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +51,14 @@ public class InstrumentManager {
     public void addInstrument(String name,Context context){
         switch (name){
             case ChineseDrumsKit.NAME:
-                addInstrument(new ChineseDrumsKit(context,true));
+                ChineseDrumsKit chineseDrumsKit = new ChineseDrumsKit(context,true);
+                chineseDrumsKit.addTrack(new Track(0,5));
+                addInstrument(chineseDrumsKit);
                 break;
             case GrandPiano.NAME:
-                addInstrument(new GrandPiano(context,true));
+                GrandPiano grandPiano = new GrandPiano(context,true);
+                grandPiano.addTrack(new Track(0,5));
+                addInstrument(grandPiano);
                 break;
         }
     }

@@ -7,6 +7,9 @@ import android.graphics.BitmapFactory;
 import com.streetband.R;
 import com.streetband.utils.BitmapOperations;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ChineseDrumsKit implements Instrument {
     public static final int ICON_SIZE = 80;
     public static final int OCTAVE_SUM = 2;
@@ -14,6 +17,7 @@ public class ChineseDrumsKit implements Instrument {
     private String mInstrumentName;
     private Bitmap mIcon;
 
+    private List<Track> mTracks = new ArrayList<>();
     private float mStart = 0;
     private float mLength = 5;
     private float mVolume = 1.0f;
@@ -37,6 +41,16 @@ public class ChineseDrumsKit implements Instrument {
 
     }
 
+
+    @Override
+    public void addTrack(Track track) {
+        mTracks.add(track);
+    }
+
+    @Override
+    public List<Track> getTracks() {
+        return mTracks;
+    }
 
     @Override
     public int getImageId() {

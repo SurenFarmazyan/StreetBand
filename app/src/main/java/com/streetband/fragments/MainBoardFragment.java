@@ -26,6 +26,7 @@ import com.streetband.customViews.Edge;
 import com.streetband.managers.InstrumentManager;
 import com.streetband.managers.SettingsManager;
 import com.streetband.models.Instrument;
+import com.streetband.models.Track;
 
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class MainBoardFragment extends Fragment {
 
     //adapters
     private InstrumentsAdapter mInstrumentsAdapter;
+    private MainBoardAdapter mMainBoardAdapter;
 
     //managers
     private InstrumentManager mInstrumentManager;
@@ -88,17 +90,13 @@ public class MainBoardFragment extends Fragment {
             @Override
             public void instrumentAdded(Instrument instrument, int position) {
                 mAddedInstrumentsList.notifyItemAdded();
-                mCustomMainBoard.addRow();
-                CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
-                customEditBoard.setOctaveSum(instrument.getOctaveSum());
-                customEditBoard.setStart(instrument.getStart());
-                customEditBoard.setLength(instrument.getLength());
-                mCustomMainBoard.addChild(customEditBoard, mCustomMainBoard.getRowCount() - 1);
+                mMainBoardAdapter.notifyRowAdded();
             }
 
             @Override
             public void instrumentRemoved(int position) {
                 mAddedInstrumentsList.notifyItemRemoved();
+                mMainBoardAdapter.notifyRowRemoved(position);
             }
         });
     }
@@ -124,15 +122,8 @@ public class MainBoardFragment extends Fragment {
         mPopupWindow = popupWindow();
         mCustomMainBoard.addPopupWindow(mPopupWindow);
         mCustomMainBoard.setLength(mSettingsManger.getSongLength());
-        for (Instrument instrument : mInstrumentManager.getInstrumentsList()) {
-            mCustomMainBoard.addRow();
-            CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
-            customEditBoard.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-            customEditBoard.setOctaveSum(instrument.getOctaveSum());
-            customEditBoard.setStart(instrument.getStart());
-            customEditBoard.setLength(instrument.getLength());
-            mCustomMainBoard.addChild(customEditBoard, mCustomMainBoard.getRowCount() - 1);
-        }
+        mMainBoardAdapter = new MainBoardAdapter(mInstrumentManager.getInstrumentsList());
+        mCustomMainBoard.setAdapter(mMainBoardAdapter);
 
 
         mCustomSeekBar.synchronizeWithMainBoard(mCustomMainBoard);
@@ -179,21 +170,21 @@ public class MainBoardFragment extends Fragment {
         mCustomNavigationDrawer.addNavigationListener(new CustomNavigationDrawer.NavigationListener() {
             @Override
             public void navigationPosition(int position, int shadowRadius) {
-                mCustomSeekBar.setLeft(position - shadowRadius);
-                mCustomSeekBar.updateVisibility();
-                mCustomCursor.setLeft(position - shadowRadius);
-                mCustomMainBoard.updateVisibility();
+//                mCustomSeekBar.setLeft(position - shadowRadius);
+//                mCustomSeekBar.updateVisibility();
+//                mCustomCursor.setLeft(position - shadowRadius);
+//                mCustomMainBoard.updateVisibility();
             }
         });
-        mCustomCursor.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (isActive) {
-                    mCustomCursor.setLeft(mCustomNavigationDrawer.getPosition());
-                    mCustomSeekBar.setLeft(mCustomNavigationDrawer.getPosition());
-                }
-            }
-        });
+//        mCustomCursor.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//                if (isActive) {
+//                    mCustomCursor.setLeft(mCustomNavigationDrawer.getPosition());
+//                    mCustomSeekBar.setLeft(mCustomNavigationDrawer.getPosition());
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -270,7 +261,7 @@ public class MainBoardFragment extends Fragment {
 
         @Override
         public void instrumentSelected() {
-            ((GeneralActivity) getActivity()).instrumentSelected(mInstrument.getInstrumentName());
+            ((GeneralActivity) getActivity()).instrumentSelected(mInstrument);
         }
     }
 
@@ -321,6 +312,46 @@ public class MainBoardFragment extends Fragment {
                     break;
             }
             mPopupWindow.dismiss();
+        }
+    }
+
+
+
+    //custom main board adapter
+    private class MainBoardAdapter extends CustomMainBoard.Adapter{
+        List<Instrument> mInstruments;
+
+        public MainBoardAdapter(List<Instrument> instruments) {
+            mInstruments = instruments;
+        }
+
+        @Override
+        public void startChanged(int row, int positionInRow,float start) {
+            mInstruments.get(row).getTracks().get(positionInRow).setStart(start);
+        }
+
+        @Override
+        public void endChanged(int row, int positionInRow,float end) {
+            mInstruments.get(row).getTracks().get(positionInRow).setEnd(end);
+        }
+
+        @Override
+        public void bind(int row, int positionInRow, CustomEditBoard customEditBoard) {
+            Track track = mInstruments.get(row).getTracks().get(positionInRow);
+            customEditBoard.setStart(track.getStart());
+            customEditBoard.setEnd(track.getEnd());
+            customEditBoard.setOctaveSum(mInstruments.get(row).getOctaveSum());
+            customEditBoard.setNotesMap(mInstruments.get(row).getTracks().get(positionInRow).getNotesMap());
+        }
+
+        @Override
+        public int getChildrenCountInRow(int row) {
+            return mInstruments.get(row).getTracks().size();
+        }
+
+        @Override
+        public int getRowCount() {
+            return mInstruments.size();
         }
     }
 }
