@@ -21,7 +21,7 @@ public class CustomCursor extends View {
 //    final params
     private float mDensity;
     private int BIG_PADDING = 80;
-    private int MEDIUM_PADDING = 15;
+    private int MEDIUM_PADDING = 20;
     private int SMALL_PADDING = 10;
     private int OFFSET_Y = 48;
     private int ARROW_HEIGHT = 30;
@@ -76,8 +76,9 @@ public class CustomCursor extends View {
         preparePath();
     }
 
+
     public void setPosition(float position){
-        mPosition = position*mDensity;
+        mPosition = BIG_PADDING*position;
         preparePath();
         invalidate();
     }
@@ -133,6 +134,7 @@ public class CustomCursor extends View {
                 break;
             case MotionEvent.ACTION_MOVE:
                 mPosition = x;
+                mPosition = Math.max(0,mPosition);
                 preparePath();
                 invalidate();
                 return true;

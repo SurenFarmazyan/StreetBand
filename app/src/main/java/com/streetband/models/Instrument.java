@@ -2,7 +2,13 @@ package com.streetband.models;
 
 import android.graphics.Bitmap;
 
+import java.util.List;
+
 public interface Instrument {
+
+    void addTrack(Track track);
+
+    List<Track> getTracks();
 
     int getImageId();
 

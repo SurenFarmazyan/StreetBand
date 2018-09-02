@@ -57,6 +57,8 @@ public class CustomMainBoard extends ViewGroup {
     //params
     private float mBoardLength;
 
+    //adapter
+    private Adapter mAdapter;
 
     //dynamic params
     private int mWidth;
@@ -93,6 +95,7 @@ public class CustomMainBoard extends ViewGroup {
     private int mMinScrollY;
 
     private int mSelectedRow = -1;
+    private int mSelectedPositionInRow = -1;
     private CustomEditBoard mSelectedEditBoard;
 
 
@@ -203,6 +206,24 @@ public class CustomMainBoard extends ViewGroup {
         }
     }
 
+    public void setAdapter(Adapter adapter){
+        mAdapter = adapter;
+        mEditBoards.clear();
+        for(int i = 0; i < mAdapter.getRowCount();i++){
+            mEditBoards.add(new ArrayList<CustomEditBoard>());
+            for(int j = 0; j < mAdapter.getChildrenCountInRow(i); j++){
+                CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
+                customEditBoard.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+                mAdapter.bind(i,j,customEditBoard);
+                mEditBoards.get(i).add(customEditBoard);
+                addView(customEditBoard);
+            }
+        }
+        needToReLayout = true;
+        requestLayout();
+    }
+
+
     public int getMinScrollY(){
         return mMinScrollY;
     }
@@ -239,8 +260,8 @@ public class CustomMainBoard extends ViewGroup {
     //not to use only for animation
     public void setScaleY(float scaleY) {
         mScaleY = scaleY;
-        mHeight = (int) ((mEditBoards.size() - 1) * (BIG_PADDING + SMALL_PADDING) + (BIG_PADDING - 2 * MEDIUM_PADDING) * mScaleY + 2 * MEDIUM_PADDING + SMALL_PADDING);
-//        mVisibleHeight = (int) (mVisibleArea.height() / mScaleY);
+        measure();
+
         int t = (int)((BIG_PADDING - 2*MEDIUM_PADDING)*(mScaleY - 1));
 
         if (isExpanded) {
@@ -297,19 +318,6 @@ public class CustomMainBoard extends ViewGroup {
         if (!isExpanded) {
             mMaxScrollY = mHeight - mVisibleArea.height();
         }
-    }
-    public int getRowCount(){
-        return mEditBoards.size();
-    }
-
-    public void addChild(CustomEditBoard customEditBoard, int row) {
-        if (row >= mEditBoards.size()) {
-            return;
-        }
-        mEditBoards.get(row).add(customEditBoard);
-
-        needToReLayout = true;
-        addView(customEditBoard);
     }
 
     public void setLength(float length){
@@ -438,8 +446,6 @@ public class CustomMainBoard extends ViewGroup {
     protected void onDraw(Canvas canvas) {
 
         if (mScaleY > 1.5f) {
-//            CustomEditBoard customEditBoard = mEditBoards.get(mSelectedRow).get(0);
-//            mCoefficient = customEditBoard.getCoefficient();
             for (int i = 0; i < mHelpers.length; i++) {
                 Helper helper = mHelpers[i];
                 if (helper.isLine) {
@@ -529,14 +535,18 @@ public class CustomMainBoard extends ViewGroup {
                 if (isDraggingFromLeft) {
                     if (x < mSelectedEditBoard.getLeft()) {
                         mSelectedEditBoard.setStart(mSelectedEditBoard.getStart() - 0.25f);
+                        mAdapter.startChanged(mSelectedRow, mSelectedPositionInRow,mSelectedEditBoard.getStart());
                     } else if (x > mSelectedEditBoard.getLeft() + MEDIUM_PADDING * mScaleX) {
                         mSelectedEditBoard.setStart(mSelectedEditBoard.getStart() + 0.25f);
+                        mAdapter.startChanged(mSelectedRow, mSelectedPositionInRow,mSelectedEditBoard.getStart());
                     }
                 } else {
                     if (x > mSelectedEditBoard.getRight()) {
                         mSelectedEditBoard.setEnd(mSelectedEditBoard.getEnd() + 0.25f);
+                        mAdapter.endChanged(mSelectedRow, mSelectedPositionInRow,mSelectedEditBoard.getEnd());
                     } else if (x < mSelectedEditBoard.getRight() - MEDIUM_PADDING * mScaleX) {
                         mSelectedEditBoard.setEnd(mSelectedEditBoard.getEnd() - 0.25f);
+                        mAdapter.endChanged(mSelectedRow, mSelectedPositionInRow,mSelectedEditBoard.getEnd());
                     }
                 }
                 return true;
@@ -597,6 +607,7 @@ public class CustomMainBoard extends ViewGroup {
                         mSelectedEditBoard = customEditBoard;
                         mSelectedEditBoard.setSelected(true);
                         mSelectedRow = row;
+                        mSelectedPositionInRow = i;
                         return true;
                     }
                 }
@@ -687,5 +698,39 @@ public class CustomMainBoard extends ViewGroup {
 
     public interface CollapseListener{
         void stateChanged(boolean expanded);
+    }
+
+
+
+
+
+    public static abstract class Adapter{
+
+
+        public void notifyRowRemoved(int position){
+            //TODO
+        }
+
+        public void notifyRowAdded(){
+            //TODO
+        }
+
+        public void notifyTrackRemoved(){
+            //TODO
+        }
+
+        public void notifyTrackAdded(){
+            //TODO
+        }
+
+        public abstract void startChanged(int row, int positionInRow,float start);
+
+        public abstract void endChanged(int row, int positionInRow,float end);
+
+        public abstract void bind(int row, int positionInRow,CustomEditBoard customEditBoard);
+
+        public abstract int getChildrenCountInRow(int row);
+
+        public abstract int getRowCount();
     }
 }

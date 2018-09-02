@@ -17,14 +17,14 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
-        android:background="@drawable/round_rect" />
+        android:background="@drawable/round_rect_selector" />
 
     <ImageButton
         android:id="@+id/toolbar_add_instrument"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="16dp"
-        android:background="@drawable/round_rect"
+        android:background="@drawable/round_rect_selector"
         app:layout_constraintStart_toEndOf="@+id/toolbar_add"
         app:layout_constraintTop_toTopOf="@+id/toolbar_stop"
         app:srcCompat="@drawable/ic_viewpager" />
@@ -37,7 +37,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="2dp"
-        android:background="@drawable/round_rect"
+        android:background="@drawable/round_rect_selector"
         android:visibility="gone"/>
 
     <ImageButton
@@ -47,7 +47,7 @@
         app:srcCompat="@drawable/ic_stop"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="@drawable/round_rect" />
+        android:background="@drawable/round_rect_selector" />
 
     <ImageButton
         android:id="@+id/toolbar_play"
@@ -56,7 +56,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
-        android:background="@drawable/round_rect"
+        android:background="@drawable/round_rect_selector"
         app:layout_constraintEnd_toStartOf="@+id/toolbar_settings"
         app:layout_constraintStart_toEndOf="@+id/toolbar_add"
         app:layout_constraintTop_toTopOf="parent"
@@ -69,7 +69,7 @@
         app:srcCompat="@drawable/ic_record"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="@drawable/round_rect" />
+        android:background="@drawable/round_rect_selector" />
 
     <CheckBox
         android:id="@+id/toolbar_metronome"
@@ -98,7 +98,7 @@
         android:layout_height="32dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/round_rect"
+        android:background="@drawable/round_rect_selector"
         android:text="@string/done"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/toolbar_settings"

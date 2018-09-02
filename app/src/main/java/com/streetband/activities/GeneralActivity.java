@@ -6,15 +6,13 @@ import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
-import android.media.midi.MidiDevice;
-import android.media.midi.MidiDeviceInfo;
-import android.media.midi.MidiManager;
-import android.media.midi.MidiOutputPort;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -31,12 +29,13 @@ import com.streetband.fragments.MainBoardFragment;
 import com.streetband.fragments.SettingsFragment;
 import com.streetband.managers.InstrumentManager;
 import com.streetband.managers.SettingsManager;
-import com.streetband.models.ChineseDrumsKit;
 import com.streetband.models.GrandPiano;
+import com.streetband.models.Instrument;
 
 import java.io.IOException;
 
 public class GeneralActivity extends AppCompatActivity {
+    private static final String TAG = "GeneralActivity";
     private static final String METRONOME_FOLDER = "metronome";
     public static final String SYSTEM_SOUNDS_FOLDER = "systemSounds";
     public static final int DEFAULT_SONG_LENGTH = 16;
@@ -56,6 +55,9 @@ public class GeneralActivity extends AppCompatActivity {
     private CustomCountdown mCountdown;
     private CustomSeekBar mCustomSeekBar;
     private CustomCursor mCustomCursor;
+
+    //listeners
+    private RecordListener mRecordListener;
 
     //tools
     private SoundPool mMetronomeSoundPool;
@@ -97,7 +99,7 @@ public class GeneralActivity extends AppCompatActivity {
 
         mCountdown = findViewById(R.id.main_countdown);
         mCustomSeekBar = findViewById(R.id.toolbar_customSeekBar);
-        mCustomCursor = findViewById(R.id.main_cursor);
+//        mCustomCursor = findViewById(R.id.main_cursor);
 
 
         //tools
@@ -148,13 +150,14 @@ public class GeneralActivity extends AppCompatActivity {
             }
         });
 
+        mRecordButton.setEnabled(false);
         mRecordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCountdown.setVisibility(View.VISIBLE);
                 mRecordButton.setBackgroundColor(Color.RED);
                 mPlayButton.setBackgroundColor(Color.GREEN);
-                new AsyncTask().execute();
+                new PreRecorder().execute();
             }
         });
 
@@ -192,6 +195,7 @@ public class GeneralActivity extends AppCompatActivity {
         mMainBoardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mRecordButton.setEnabled(false);
                 mMainBoardFragment = new MainBoardFragment();
                 mFragmentManager.beginTransaction().setCustomAnimations(R.animator.scale_in_animator,R.animator.scale_out_animator)
                         .replace(R.id.main_container,mMainBoardFragment).commit();
@@ -222,19 +226,21 @@ public class GeneralActivity extends AppCompatActivity {
         return mCustomCursor;
     }
 
-    public void instrumentSelected(String name){
+    public void instrumentSelected(Instrument instrument){
         Fragment fragment;
-        if(name.equals(getString(R.string.grand_piano))){
-            fragment = new GrandPianoFragment();
+        if(instrument.getName().equals(getString(R.string.grand_piano))){
+            fragment = GrandPianoFragment.getInstance((GrandPiano)instrument);
+            mRecordListener = (GrandPianoFragment)fragment;
         }else{
             fragment = new ChineseDrumsKitFragment();
         }
         mCustomSeekBar.setLeft(0);
         mMainBoardFragment = null;
         mMainBoardButton.setVisibility(View.VISIBLE);
-        mCustomCursor.setShowLine(false);
+//        mCustomCursor.setShowLine(false);
         mFragmentManager.beginTransaction().setCustomAnimations(R.animator.scale_in_animator, R.animator.scale_out_animator)
                 .replace(R.id.main_container, fragment).commit();
+        mRecordButton.setEnabled(true);
 
     }
 
@@ -249,7 +255,14 @@ public class GeneralActivity extends AppCompatActivity {
     ///INNER CLASSES
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private class AsyncTask extends android.os.AsyncTask<Void,Integer,Void>{
+    private class PreRecorder extends android.os.AsyncTask<Void,Integer,Void>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mRecordListener.prepareRecording();
+            mCustomSeekBar.setPosition(0);
+        }
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -282,6 +295,59 @@ public class GeneralActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             mCountdown.setVisibility(View.GONE);
             mMetronomeSoundPool.play(mMetronomeBigId,1.0f,1.0f,0,0,0);
+            mRecordListener.startRecording();
+            new Cursor().execute();
         }
+    }
+
+
+
+    private class Cursor extends AsyncTask<Void,Void,Void>{
+        private long mStartTime;
+        private long mEndTime;
+        private float offset;
+        private float mCurrentPosition;
+
+        @Override
+        protected void onPreExecute() {
+            mStartTime = System.currentTimeMillis();
+            mEndTime = (long)(4*mSettingsManger.getSongLength()*1000/((float)mSettingsManger.getTact()/60)) + mStartTime;
+            offset = (float) mSettingsManger.getTact()/60*0.01f;
+            mCurrentPosition = 0;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            while (mEndTime > System.currentTimeMillis()){
+                try {
+                    Thread.sleep(40);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                publishProgress();
+                mCurrentPosition += offset;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            mCustomSeekBar.setPosition(mCurrentPosition);
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            mRecordListener.finishRecording();
+            mRecordButton.setBackgroundResource(R.drawable.round_rect_selector);
+            mPlayButton.setBackgroundResource(R.drawable.round_rect_selector);
+        }
+    }
+
+
+    public interface RecordListener{
+        void prepareRecording();
+        void startRecording();
+        void stopRecording();
+        void finishRecording();
     }
 }

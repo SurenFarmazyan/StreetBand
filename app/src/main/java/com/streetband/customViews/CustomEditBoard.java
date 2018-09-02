@@ -10,17 +10,14 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.support.v4.app.NotificationCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
 import com.streetband.R;
+import com.streetband.models.Note;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,7 +67,7 @@ public class CustomEditBoard extends View {
 
     private float mLastNoteLength = 0.25f;
 
-    private Map<Integer,Set<Note>> mSetMap = new HashMap<>();
+    private Map<Integer,Set<Note>> mNotesMap = new HashMap<>();
     private float mCoefficient;
 
 
@@ -193,6 +190,11 @@ public class CustomEditBoard extends View {
         invalidate();
     }
 
+    public void setNotesMap(Map<Integer,Set<Note>> notesMap){
+        mNotesMap = notesMap;
+        invalidate();
+    }
+
     public void setScaleY(float scaleY){
         mScaleY = scaleY;
         mHeight = (BIG_PADDING - 2*MEDIUM_PADDING)*mScaleY + 2*MEDIUM_PADDING;
@@ -218,20 +220,20 @@ public class CustomEditBoard extends View {
             float start = x/BIG_PADDING;
             start = start - start%(0.25f);
             int row = (int)(y/mCoefficient);
-            if (mSetMap.containsKey(row)) {
-                Set<Note> set = mSetMap.get(row);
+            if (mNotesMap.containsKey(row)) {
+                Set<Note> set = mNotesMap.get(row);
                 for(Note note : set){
-                    if(note.containsX(x)){
+                    if(isNoteContainsX(note,x)){
                         mSelectedNote = note;
                         return;
                     }
                 }
-                mSelectedNote = new Note(mStart + start,mStart + start +mLastNoteLength);
+                mSelectedNote = new Note(mStart + start,mStart + start +mLastNoteLength,row);
                 set.add(mSelectedNote);
             } else {
-                mSelectedNote = new Note(mStart + start,mStart + start+mLastNoteLength);
-                mSetMap.put(row, new HashSet<Note>());
-                mSetMap.get(row).add(mSelectedNote);
+                mSelectedNote = new Note(mStart + start,mStart + start+mLastNoteLength,row);
+                mNotesMap.put(row, new HashSet<Note>());
+                mNotesMap.get(row).add(mSelectedNote);
             }
             invalidate();
         }
@@ -274,6 +276,14 @@ public class CustomEditBoard extends View {
         animatorSet.start();
     }
 
+    private boolean isNoteContainsX(Note note, float x){
+        return x>(note.getStart() - mStart)*BIG_PADDING && x<(note.getEnd() - mStart)*BIG_PADDING;
+    }
+
+    private boolean isNoteDraggingX(Note note, int x){
+        return x > ((note.getEnd() - mStart)*BIG_PADDING - MEDIUM_PADDING/2) && x < ((note.getEnd() - mStart)*BIG_PADDING);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         setMeasuredDimension((int)mWidth,(int)mHeight);
@@ -284,15 +294,15 @@ public class CustomEditBoard extends View {
         canvas.save();
         canvas.scale(mScaleX,1.0f);
 
-        for(int row : mSetMap.keySet()){
-            Set<Note> set = mSetMap.get(row);
+        for(int row : mNotesMap.keySet()){
+            Set<Note> set = mNotesMap.get(row);
 //            Log.i(TAG,"row = " + row + " set size " + set.size());
             for( Note note : set){
-                canvas.drawRect( (note.start - mStart)*BIG_PADDING,MEDIUM_PADDING + mCoefficient*row*mScaleY,(note.end - mStart)*BIG_PADDING,MEDIUM_PADDING + mCoefficient*(row + 1)*mScaleY,mNotePaint);
+                canvas.drawRect( (note.getStart() - mStart)*BIG_PADDING,MEDIUM_PADDING + mCoefficient*row*mScaleY,(note.getEnd() - mStart)*BIG_PADDING,MEDIUM_PADDING + mCoefficient*(row + 1)*mScaleY,mNotePaint);
                 if(isEnabled) {
-                    canvas.drawRect((note.start - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * row * mScaleY, (note.end - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * (row + 1) * mScaleY, mStrokePaint);
+                    canvas.drawRect((note.getStart() - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * row * mScaleY, (note.getEnd() - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * (row + 1) * mScaleY, mStrokePaint);
                     if (mSelectedNote == note) {
-                        canvas.drawRect((note.start - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * row * mScaleY, (note.end - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * (row + 1) * mScaleY, mSelectedPaint);
+                        canvas.drawRect((note.getStart() - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * row * mScaleY, (note.getEnd() - mStart) * BIG_PADDING, MEDIUM_PADDING + mCoefficient * (row + 1) * mScaleY, mSelectedPaint);
                     }
                 }
             }
@@ -330,10 +340,10 @@ public class CustomEditBoard extends View {
 
             switch (event.getAction()){
                 case MotionEvent.ACTION_DOWN:
-                    if(mSetMap.containsKey(row)){
-                      for(Note note : mSetMap.get(row)){
-                          if(note.containsX(x)){
-                              if(note.draggingX(x)){
+                    if(mNotesMap.containsKey(row)){
+                      for(Note note : mNotesMap.get(row)){
+                          if(isNoteContainsX(note,x)){
+                              if(isNoteDraggingX(note,x)){
                                   isDragging = true;
                                   isExpanding = true;
                                   mSelectedNote = note;
@@ -356,13 +366,13 @@ public class CustomEditBoard extends View {
                 case MotionEvent.ACTION_MOVE:
                     if(isDragging){
                         if(isExpanding){
-                            if(x > (mSelectedNote.end - mStart)*BIG_PADDING){
-                                mSelectedNote.end += 0.25f;
+                            if(x > (mSelectedNote.getEnd() - mStart)*BIG_PADDING){
+                                mSelectedNote.setEnd(mSelectedNote.getEnd() + 0.25f);
                                 invalidate();
-                            }else if(x < (mSelectedNote.end - mStart - 0.25f)*BIG_PADDING ){
-                                mSelectedNote.end -= 0.25f;
-                                if(mSelectedNote.start == mSelectedNote.end){
-                                    mSetMap.get(mSelectedRow).remove(mSelectedNote);
+                            }else if(x < (mSelectedNote.getEnd() - mStart - 0.25f)*BIG_PADDING ){
+                                mSelectedNote.setEnd(mSelectedNote.getEnd() - 0.25f);
+                                if(mSelectedNote.getStart() == mSelectedNote.getEnd()){
+                                    mNotesMap.get(mSelectedRow).remove(mSelectedNote);
                                     mSelectedNote = null;
                                     isDragging = false;
                                 }
@@ -370,13 +380,13 @@ public class CustomEditBoard extends View {
                             }
                         }else {
                             if(row != mSelectedRow){
-                                mSetMap.get(mSelectedRow).remove(mSelectedNote);
-                                if(mSetMap.containsKey(row)){
-                                    mSetMap.get(row).add(mSelectedNote);
+                                mNotesMap.get(mSelectedRow).remove(mSelectedNote);
+                                if(mNotesMap.containsKey(row)){
+                                    mNotesMap.get(row).add(mSelectedNote);
                                 }else {
                                     Set<Note> set = new HashSet<>();
                                     set.add(mSelectedNote);
-                                    mSetMap.put(row, set);
+                                    mNotesMap.put(row, set);
                                 }
                                 mSelectedRow = row;
                                 invalidate();
@@ -393,21 +403,5 @@ public class CustomEditBoard extends View {
         }
 
         return super.onTouchEvent(event);
-    }
-
-    private class Note {
-        float start;
-        float end;
-
-        public Note(float start, float end) {
-            this.start = start;
-            this.end = end;
-        }
-        public boolean containsX(float x){
-            return x>(start - mStart)*BIG_PADDING && x<(end - mStart)*BIG_PADDING;
-        }
-        public boolean draggingX(int x){
-            return x > ((end - mStart)*BIG_PADDING - MEDIUM_PADDING/2) && x < ((end - mStart)*BIG_PADDING);
-        }
     }
 }
