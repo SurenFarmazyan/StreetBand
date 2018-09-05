@@ -84,7 +84,7 @@ public class GeneralActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_general);
-
+        //todo
         //view binding
         mAddInstrumentButton = findViewById(R.id.toolbar_add_instrument);
         mMainBoardButton = findViewById(R.id.toolbar_main_board);
