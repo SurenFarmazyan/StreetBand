@@ -1,6 +1,5 @@
 package com.streetband.fragments;
 
-import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioAttributes;
@@ -8,22 +7,37 @@ import android.media.SoundPool;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.streetband.R;
+import com.streetband.activities.GeneralActivity;
+import com.streetband.managers.SettingsManager;
+import com.streetband.models.ChineseDrumsKit;
+import com.streetband.threads.RecorderMidi;
+import com.streetband.threads.RecorderWav;
 import com.streetband.utils.BounceInterpolator;
 
 import java.io.IOException;
 
-public class ChineseDrumsKitFragment extends Fragment {
+public class ChineseDrumsKitFragment extends Fragment implements GeneralActivity.RecordListener{
+    public static final String KEY_CHINESE_DRUMS = "ChineseDrumsKitFragment";
+
+
+    public static ChineseDrumsKitFragment newInstance(ChineseDrumsKit chineseDrumsKit) {
+
+        Bundle args = new Bundle();
+        args.putSerializable(KEY_CHINESE_DRUMS,chineseDrumsKit);
+        ChineseDrumsKitFragment fragment = new ChineseDrumsKitFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     public static final String FOLDER = "chineseDrumsKit";
     public static final String BIG_CLAP = "Big Clap.wav";
     public static final String BIG_CLAP_2 = "Big_Clap_2.wav";
@@ -45,8 +59,7 @@ public class ChineseDrumsKitFragment extends Fragment {
 
 
     //final params
-
-
+    private RecorderWav mRecorder;
     private SoundPool mSoundPool;
     private AssetManager mAssetManager;
 
@@ -92,6 +105,9 @@ public class ChineseDrumsKitFragment extends Fragment {
     private int mTak3Id;
     private int mTak4Id;
     private int mTak5Id;
+
+    //
+    private boolean isRecording;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -202,6 +218,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,0);
+                    }
                     mSoundPool.play(mBigClapId, 1.0f, 1.0f, 1, 0, 1.0f);
                     mBigClap.startAnimation(mBigClapAnim);
                     return true;
@@ -214,6 +233,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,1);
+                    }
                     mSoundPool.play(mBigClap2Id, 1.0f, 1.0f, 1, 0, 1.0f);
                     mBigClap2.startAnimation(mBigClapAnim);
                     return true;
@@ -226,6 +248,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,2);
+                    }
                     mSoundPool.play(mClap1Id, 1.0f, 1.0f, 1, 0, 1.0f);
                     mClap1.startAnimation(mBigBoomAnim);
                     return true;
@@ -237,6 +262,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,3);
+                    }
                     mSoundPool.play(mClap1MaskId, 1.0f, 1.0f, 1, 0, 1.0f);
                     mClap1.startAnimation(mBoom5Anim);
                     return true;
@@ -249,6 +277,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,4);
+                    }
                     mSoundPool.play(mClap2Id, 1.0f, 1.0f, 1, 0, 1.0f);
                     mClap2.startAnimation(mBigBoomAnim);
                     return true;
@@ -260,6 +291,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,5);
+                    }
                     mSoundPool.play(mClap2MaskId, 1.0f, 1.0f, 1, 0, 1.0f);
                     mClap2.startAnimation(mBoom5Anim);
                     return true;
@@ -272,6 +306,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,6);
+                    }
                     mSoundPool.play(mBigBoomId, 1.0f, 1.0f, 1, 0, 1.0f);
                     mBigBoom.startAnimation(mBigBoomAnim);
                     return true;
@@ -284,6 +321,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,7);
+                    }
                     mSoundPool.play(mBoom5Id,1.0f,1.0f,1,0,1.0f);
                     mBoom5.startAnimation(mBoom5Anim);
                     return true;
@@ -295,6 +335,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,8);
+                    }
                     mSoundPool.play(mBoom4Id,1.0f,1.0f,1,0,1.0f);
                     mBoom4.startAnimation(mBoom5Anim);
                     return true;
@@ -306,6 +349,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,9);
+                    }
                     mSoundPool.play(mBoom3Id,1.0f,1.0f,1,0,1.0f);
                     mBoom3.startAnimation(mBoom5Anim);
                     return true;
@@ -317,6 +363,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,10);
+                    }
                     mSoundPool.play(mBoom2Id,1.0f,1.0f,1,0,1.0f);
                     mBoom2.startAnimation(mBoom5Anim);
                     return true;
@@ -328,6 +377,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,11);
+                    }
                     mSoundPool.play(mBoom1Id,1.0f,1.0f,1,0,1.0f);
                     mBoom1.startAnimation(mBoom5Anim);
                     return true;
@@ -339,6 +391,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,12);
+                    }
                     mSoundPool.play(mTak1Id,1.0f,1.0f,1,0,1.0f);
                     return true;
                 }
@@ -349,6 +404,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,13);
+                    }
                     mSoundPool.play(mTak2Id,1.0f,1.0f,1,0,1.0f);
                     return true;
                 }
@@ -359,6 +417,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,14);
+                    }
                     mSoundPool.play(mTak3Id,1.0f,1.0f,1,0,1.0f);
                     return true;
                 }
@@ -369,6 +430,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,15);
+                    }
                     mSoundPool.play(mTak4Id,1.0f,1.0f,1,0,1.0f);
                     return true;
                 }
@@ -379,6 +443,9 @@ public class ChineseDrumsKitFragment extends Fragment {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if(isRecording){
+                        mRecorder.addRecordMessage(RecorderWav.WHAT_DOWN,16);
+                    }
                     mSoundPool.play(mTak5Id,1.0f,1.0f,1,0,1.0f);
                     return true;
                 }
@@ -391,5 +458,30 @@ public class ChineseDrumsKitFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         mSoundPool.release();
+    }
+
+    @Override
+    public void prepareRecording() {
+        mRecorder = new RecorderWav(((ChineseDrumsKit)getArguments().getSerializable(KEY_CHINESE_DRUMS)).getTracks().get(0).getNotesMap()
+                ,getContext(), SettingsManager.getInstance().getTact());
+    }
+
+    @Override
+    public void startRecording() {
+        mRecorder.setStartTime();
+        mRecorder.start();
+        mRecorder.getLooper();
+        isRecording = true;
+    }
+
+    @Override
+    public void stopRecording() {
+        //TODO
+    }
+
+    @Override
+    public void finishRecording() {
+        isRecording = false;
+        mRecorder.quit();
     }
 }

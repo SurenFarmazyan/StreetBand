@@ -12,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -21,7 +20,6 @@ import android.widget.ImageView;
 
 import com.streetband.R;
 import com.streetband.customViews.CustomCountdown;
-import com.streetband.customViews.CustomCursor;
 import com.streetband.customViews.CustomSeekBar;
 import com.streetband.fragments.ChineseDrumsKitFragment;
 import com.streetband.fragments.GrandPianoFragment;
@@ -29,6 +27,7 @@ import com.streetband.fragments.MainBoardFragment;
 import com.streetband.fragments.SettingsFragment;
 import com.streetband.managers.InstrumentManager;
 import com.streetband.managers.SettingsManager;
+import com.streetband.models.ChineseDrumsKit;
 import com.streetband.models.GrandPiano;
 import com.streetband.models.Instrument;
 
@@ -54,7 +53,6 @@ public class GeneralActivity extends AppCompatActivity {
     //custom views
     private CustomCountdown mCountdown;
     private CustomSeekBar mCustomSeekBar;
-    private CustomCursor mCustomCursor;
 
     //listeners
     private RecordListener mRecordListener;
@@ -99,7 +97,6 @@ public class GeneralActivity extends AppCompatActivity {
 
         mCountdown = findViewById(R.id.main_countdown);
         mCustomSeekBar = findViewById(R.id.toolbar_customSeekBar);
-//        mCustomCursor = findViewById(R.id.main_cursor);
 
 
         //tools
@@ -168,7 +165,6 @@ public class GeneralActivity extends AppCompatActivity {
                     mSettingsFragment = new SettingsFragment();
                     mFragmentManager.beginTransaction().add(R.id.main_container_2, mSettingsFragment).commit();
                     mDoneButton.setVisibility(View.VISIBLE);
-                    mCustomCursor.setShowLine(false);
                     isInSettings = true;
                 }
             }
@@ -180,9 +176,6 @@ public class GeneralActivity extends AppCompatActivity {
                     isInSettings = false;
                     mSettingsFragment.publishUpdates();
                     mFragmentManager.beginTransaction().remove(mFragmentManager.findFragmentById(R.id.main_container_2)).commit();
-                    if(mMainBoardFragment != null){
-                        mCustomCursor.setShowLine(true);
-                    }
                 }else {
                     isRowOpened = false;
                     mMainBoardFragment.closeRow();
@@ -199,7 +192,6 @@ public class GeneralActivity extends AppCompatActivity {
                 mMainBoardFragment = new MainBoardFragment();
                 mFragmentManager.beginTransaction().setCustomAnimations(R.animator.scale_in_animator,R.animator.scale_out_animator)
                         .replace(R.id.main_container,mMainBoardFragment).commit();
-                mCustomCursor.setShowLine(true);
                 mMainBoardButton.setVisibility(View.GONE);
             }
         });
@@ -222,22 +214,19 @@ public class GeneralActivity extends AppCompatActivity {
         return mCustomSeekBar;
     }
 
-    public CustomCursor getCursor(){
-        return mCustomCursor;
-    }
 
     public void instrumentSelected(Instrument instrument){
         Fragment fragment;
         if(instrument.getName().equals(getString(R.string.grand_piano))){
-            fragment = GrandPianoFragment.getInstance((GrandPiano)instrument);
+            fragment = GrandPianoFragment.newInstance((GrandPiano)instrument);
             mRecordListener = (GrandPianoFragment)fragment;
         }else{
-            fragment = new ChineseDrumsKitFragment();
+            fragment = ChineseDrumsKitFragment.newInstance((ChineseDrumsKit)instrument);
+            mRecordListener = (ChineseDrumsKitFragment)fragment;
         }
         mCustomSeekBar.setLeft(0);
         mMainBoardFragment = null;
         mMainBoardButton.setVisibility(View.VISIBLE);
-//        mCustomCursor.setShowLine(false);
         mFragmentManager.beginTransaction().setCustomAnimations(R.animator.scale_in_animator, R.animator.scale_out_animator)
                 .replace(R.id.main_container, fragment).commit();
         mRecordButton.setEnabled(true);
@@ -262,6 +251,7 @@ public class GeneralActivity extends AppCompatActivity {
             super.onPreExecute();
             mRecordListener.prepareRecording();
             mCustomSeekBar.setPosition(0);
+            mCustomSeekBar.setIsRecording(true);
         }
 
         @Override
@@ -301,7 +291,7 @@ public class GeneralActivity extends AppCompatActivity {
     }
 
 
-
+    //Cursor mover
     private class Cursor extends AsyncTask<Void,Void,Void>{
         private long mStartTime;
         private long mEndTime;
@@ -324,8 +314,8 @@ public class GeneralActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                publishProgress();
                 mCurrentPosition += offset;
+                publishProgress();
             }
             return null;
         }
@@ -340,6 +330,8 @@ public class GeneralActivity extends AppCompatActivity {
             mRecordListener.finishRecording();
             mRecordButton.setBackgroundResource(R.drawable.round_rect_selector);
             mPlayButton.setBackgroundResource(R.drawable.round_rect_selector);
+            mCustomSeekBar.setIsRecording(false);
+            mCustomSeekBar.setPosition(0);
         }
     }
 

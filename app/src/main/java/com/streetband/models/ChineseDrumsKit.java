@@ -7,10 +7,11 @@ import android.graphics.BitmapFactory;
 import com.streetband.R;
 import com.streetband.utils.BitmapOperations;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChineseDrumsKit implements Instrument {
+public class ChineseDrumsKit implements Instrument ,Serializable{
     public static final int ICON_SIZE = 80;
     public static final int OCTAVE_SUM = 2;
     public static final String NAME = "Chinese Drums Kit";

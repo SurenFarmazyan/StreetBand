@@ -15,7 +15,8 @@ import android.view.ViewGroup;
 import com.streetband.R;
 import com.streetband.activities.GeneralActivity;
 import com.streetband.customViews.CustomPiano;
-import com.streetband.threads.Recorder;
+import com.streetband.managers.SettingsManager;
+import com.streetband.threads.RecorderMidi;
 import com.streetband.models.GrandPiano;
 
 import org.billthefarmer.mididriver.MidiDriver;
@@ -24,7 +25,7 @@ public class GrandPianoFragment extends Fragment implements GeneralActivity.Reco
     public static final String TAG = "GrandPianoFragment";
     public static final String KEY_GRAND_PIANO = "grandPiano";
 
-    public static GrandPianoFragment getInstance(GrandPiano grandPiano){
+    public static GrandPianoFragment newInstance(GrandPiano grandPiano){
         GrandPianoFragment fragment = new GrandPianoFragment();
         Bundle bundle = new Bundle();
         bundle.putSerializable(KEY_GRAND_PIANO,grandPiano);
@@ -114,7 +115,7 @@ public class GrandPianoFragment extends Fragment implements GeneralActivity.Reco
         private MidiDriver mMidiDriver;
 
         private Handler mPlayHandler;
-        private Recorder mRecorder;
+        private RecorderMidi mRecorder;
 
         private byte[] event;
         private boolean isReady;
@@ -153,7 +154,7 @@ public class GrandPianoFragment extends Fragment implements GeneralActivity.Reco
                 inOctave -= 1;
             }
             if(isRecording){
-                mRecorder.addRecordMessage(Recorder.WHAT_DOWN,id,(byte)(octave*12 + inOctave));
+                mRecorder.addRecordMessage(RecorderMidi.WHAT_DOWN,id,(byte)(octave*12 + inOctave));
             }
             // Construct a note ON message for the middle C at maximum velocity on channel 1:
             event = new byte[3];
@@ -177,7 +178,7 @@ public class GrandPianoFragment extends Fragment implements GeneralActivity.Reco
                 inOctave -= 1;
             }
             if(isRecording){
-                mRecorder.addRecordMessage(Recorder.WHAT_UP,id,(byte)(octave*12 + inOctave));
+                mRecorder.addRecordMessage(RecorderMidi.WHAT_UP,id,(byte)(octave*12 + inOctave));
             }
             // Construct a note OFF message for the middle C at minimum velocity on channel 1:
             event = new byte[3];
@@ -191,7 +192,7 @@ public class GrandPianoFragment extends Fragment implements GeneralActivity.Reco
         }
 
         private void prepareRecording(){
-            mRecorder = new Recorder(mGrandPiano.getTracks().get(0).getNotesMap());
+            mRecorder = new RecorderMidi(mGrandPiano.getTracks().get(0).getNotesMap(),getContext(), SettingsManager.getInstance().getTact());
             mRecorder.start();
             mRecorder.getLooper();
         }

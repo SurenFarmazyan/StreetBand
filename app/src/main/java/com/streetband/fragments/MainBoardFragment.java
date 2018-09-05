@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
@@ -16,8 +15,6 @@ import com.streetband.R;
 import com.streetband.activities.GeneralActivity;
 import com.streetband.customViews.CustomAddedInstrument;
 import com.streetband.customViews.CustomAddedInstrumentsList;
-import com.streetband.customViews.CustomChineseDrumsEdge;
-import com.streetband.customViews.CustomCursor;
 import com.streetband.customViews.CustomEditBoard;
 import com.streetband.customViews.CustomMainBoard;
 import com.streetband.customViews.CustomNavigationDrawer;
@@ -42,7 +39,6 @@ public class MainBoardFragment extends Fragment {
 
     //imported view
     private CustomSeekBar mCustomSeekBar;
-    private CustomCursor mCustomCursor;
 
 
     //adapters
@@ -116,7 +112,6 @@ public class MainBoardFragment extends Fragment {
 
 
         mCustomSeekBar = ((GeneralActivity) getActivity()).getSeekBar();
-        mCustomCursor = ((GeneralActivity) getActivity()).getCursor();
 
 
         mPopupWindow = popupWindow();
@@ -176,15 +171,6 @@ public class MainBoardFragment extends Fragment {
 //                mCustomMainBoard.updateVisibility();
             }
         });
-//        mCustomCursor.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                if (isActive) {
-//                    mCustomCursor.setLeft(mCustomNavigationDrawer.getPosition());
-//                    mCustomSeekBar.setLeft(mCustomNavigationDrawer.getPosition());
-//                }
-//            }
-//        });
     }
 
     @Override
@@ -266,6 +252,7 @@ public class MainBoardFragment extends Fragment {
     }
 
 
+    //adapter
     private class InstrumentsAdapter extends CustomAddedInstrumentsList.Adapter<InstrumentHolder> {
         private List<Instrument> mInstruments;
 

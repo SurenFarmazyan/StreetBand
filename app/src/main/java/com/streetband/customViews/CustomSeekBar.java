@@ -51,8 +51,8 @@ public class CustomSeekBar extends View {
     private int mHeight;
 
     private boolean isDragging;
-    private boolean isRecording = true;
-    private float mPosition = 100;
+    private boolean isRecording = false;
+    private float mPosition = 0;
 
     private int mScrollX = 0;
     private float mPureScrollX = 0;
@@ -151,6 +151,10 @@ public class CustomSeekBar extends View {
         }
     }
 
+    public void setRecording(){
+        isRecording = true;
+    }
+
     public void setLength(int length){
         mLength = length;
         mWidth = mLength*BIG_PADDING;
@@ -195,37 +199,42 @@ public class CustomSeekBar extends View {
                 offsetX += BIG_PADDING * mScaleX;
             }
          }
-         canvas.drawRect(mScrollX,0,mPosition,mHeight,mRedPaint);
+         if(isRecording) {
+             canvas.drawRect(mScrollX, 0, mPosition, mHeight, mRedPaint);
+         }
          canvas.drawPath(mArrow,mBoldLinePaint);
          canvas.drawPath(mArrow,mFillPaint);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-        switch (event.getAction()){
-            case MotionEvent.ACTION_DOWN:
-                mArrow.computeBounds(mRectF,false);
-                if(mRectF.contains(x,y)){
-                    isDragging = true;
+        if(!isRecording) {
+            float x = event.getX();
+            float y = event.getY();
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    mArrow.computeBounds(mRectF, false);
+                    if (mRectF.contains(x, y)) {
+                        isDragging = true;
+                        invalidate();
+                        return true;
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    mPosition = x;
+                    mPosition = Math.max(0, mPosition);
+                    preparePath();
                     invalidate();
                     return true;
-                }
-                break;
-            case MotionEvent.ACTION_MOVE:
-                mPosition = x;
-                mPosition = Math.max(0,mPosition);
-                preparePath();
-                invalidate();
-                return true;
-            case MotionEvent.ACTION_UP:
-                isDragging = false;
-                invalidate();
-                return true;
-        }
+                case MotionEvent.ACTION_UP:
+                    isDragging = false;
+                    invalidate();
+                    return true;
+            }
 
-        return false;
+            return false;
+        }
+        return super.onTouchEvent(event);
     }
 
 }

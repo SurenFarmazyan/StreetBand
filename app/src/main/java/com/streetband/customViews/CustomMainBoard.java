@@ -219,6 +219,7 @@ public class CustomMainBoard extends ViewGroup {
                 addView(customEditBoard);
             }
         }
+        measure();
         needToReLayout = true;
         requestLayout();
     }
@@ -460,7 +461,6 @@ public class CustomMainBoard extends ViewGroup {
         float offsetX =  start*BIG_PADDING*mScaleX;
         int till = (int)((mPureScrollX + mVisibleWidth)/BIG_PADDING) + 1;
 
-//        Log.i(TAG,"start = " + start + " offsetX = " + offsetX + " till = " + till);
 
         for (int i = start; i < till; i++) {
             canvas.drawLine(offsetX, mScrollY, offsetX, mScrollY + mVisibleArea.height(), mBoldLinePaint);
