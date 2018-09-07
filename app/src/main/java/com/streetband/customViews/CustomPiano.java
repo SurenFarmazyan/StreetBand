@@ -282,7 +282,7 @@ public class CustomPiano extends View {
                             }
                         }
                         if(mPointers[event.getPointerId(pointerIndex)] != i){
-                            mNoteListener.noteChanged(mPointers[event.getPointerId(pointerIndex)],i);
+                            mNoteListener.noteChanged(event.getPointerId(pointerIndex),mPointers[event.getPointerId(pointerIndex)],i);
                             mPointers[event.getPointerId(pointerIndex)] = i;
                             invalidate();
                         }
@@ -348,6 +348,6 @@ public class CustomPiano extends View {
     public interface NoteListener{
         void notePressed(int id,float note);
         void noteReleased(int id,float note);
-        void noteChanged(float oldNote, float newNote);
+        void noteChanged(int id, float oldNote, float newNote);
     }
 }
