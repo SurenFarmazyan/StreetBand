@@ -1,14 +1,6 @@
 package com.streetband.fragments;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.media.AudioAttributes;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
-import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -16,32 +8,41 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.streetband.R;
+import com.streetband.activities.GeneralActivity;
 import com.streetband.customViews.CustomPiano;
+import com.streetband.managers.SettingsManager;
+import com.streetband.threads.RecorderMidi;
+import com.streetband.models.GrandPiano;
 
 import org.billthefarmer.mididriver.MidiDriver;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-
-public class GrandPianoFragment extends Fragment {
+public class GrandPianoFragment extends Fragment implements GeneralActivity.RecordListener{
     public static final String TAG = "GrandPianoFragment";
+    public static final String KEY_GRAND_PIANO = "grandPiano";
+
+    public static GrandPianoFragment newInstance(GrandPiano grandPiano){
+        GrandPianoFragment fragment = new GrandPianoFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(KEY_GRAND_PIANO,grandPiano);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
     private CustomPiano mCustomPiano;
 
-
     private BackgroundHandler mBackgroundHandler;
+
+    private GrandPiano mGrandPiano;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        mGrandPiano = (GrandPiano) getArguments().getSerializable(KEY_GRAND_PIANO);
 
         mBackgroundHandler = new BackgroundHandler("background handler");
         mBackgroundHandler.start();
@@ -55,19 +56,20 @@ public class GrandPianoFragment extends Fragment {
         mCustomPiano = v.findViewById(R.id.piano_grand_piano);
         mCustomPiano.addNoteListener(new CustomPiano.NoteListener() {
             @Override
-            public void notePressed(float note) {
-                mBackgroundHandler.putMessage(BackgroundHandler.WHAT_PLAY,note);
+            public void notePressed(int id,float note) {
+                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_PLAY,id,note);
             }
 
             @Override
-            public void noteReleased(float note) {
-                mBackgroundHandler.putMessage(BackgroundHandler.WHAT_STOP,note);
+            public void noteReleased(int id, float note) {
+                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_STOP,id,note);
             }
 
             @Override
             public void noteChanged(float oldNote, float newNote) {
-                mBackgroundHandler.putMessage(BackgroundHandler.WHAT_PLAY,newNote);
-                mBackgroundHandler.putMessage(BackgroundHandler.WHAT_STOP,oldNote);
+                //TODO
+//                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_PLAY,newNote);
+//                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_STOP,oldNote);
             }
         });
 
@@ -78,6 +80,26 @@ public class GrandPianoFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         mBackgroundHandler.quit();
+    }
+
+    @Override
+    public void prepareRecording() {
+        mBackgroundHandler.prepareRecording();
+    }
+
+    @Override
+    public void startRecording() {
+        mBackgroundHandler.startRecording();
+    }
+
+    @Override
+    public void stopRecording() {
+        mBackgroundHandler.startRecording();
+    }
+
+    @Override
+    public void finishRecording() {
+        mBackgroundHandler.finishRecording();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,10 +114,12 @@ public class GrandPianoFragment extends Fragment {
 
         private MidiDriver mMidiDriver;
 
-        private Handler mRequestHandler;
+        private Handler mPlayHandler;
+        private RecorderMidi mRecorder;
 
         private byte[] event;
         private boolean isReady;
+        private boolean isRecording;
 
         public BackgroundHandler(String name) {
             super(name);
@@ -107,27 +131,30 @@ public class GrandPianoFragment extends Fragment {
         protected void onLooperPrepared() {
             super.onLooperPrepared();
             mMidiDriver.start();
-            mRequestHandler = new Handler(){
+            mPlayHandler = new Handler(){
                 @Override
                 public void handleMessage(Message msg) {
                     switch (msg.what){
                         case WHAT_PLAY:
-                            playNote((float)msg.obj);
+                            playNote(msg.arg1,(float)msg.obj);
                             break;
                         case WHAT_STOP:
-                            stopNote((float)msg.obj);
+                            stopNote(msg.arg1,(float)msg.obj);
                             break;
                     }
                 }
             };
         }
 
-        private void playNote(float note) {
+        private void playNote(int id,float note) {
             int octave = (int)note/7;
             float inOctave = note - octave*7;
             inOctave = inOctave*2;
             if(inOctave > 4){
                 inOctave -= 1;
+            }
+            if(isRecording){
+                mRecorder.addRecordMessage(RecorderMidi.WHAT_DOWN,id,(byte)(octave*12 + inOctave));
             }
             // Construct a note ON message for the middle C at maximum velocity on channel 1:
             event = new byte[3];
@@ -143,12 +170,15 @@ public class GrandPianoFragment extends Fragment {
 
         }
 
-        private void stopNote(float note) {
+        private void stopNote(int id,float note) {
             int octave = (int)note/7;
             float inOctave = note - octave*7;
             inOctave = inOctave*2;
             if(inOctave > 4){
                 inOctave -= 1;
+            }
+            if(isRecording){
+                mRecorder.addRecordMessage(RecorderMidi.WHAT_UP,id,(byte)(octave*12 + inOctave));
             }
             // Construct a note OFF message for the middle C at minimum velocity on channel 1:
             event = new byte[3];
@@ -161,10 +191,28 @@ public class GrandPianoFragment extends Fragment {
 
         }
 
-
-        private void putMessage(int what,float note){
-            mRequestHandler.obtainMessage(what,note).sendToTarget();
+        private void prepareRecording(){
+            mRecorder = new RecorderMidi(mGrandPiano.getTracks().get(0).getNotesMap(),getContext(), SettingsManager.getInstance().getTact());
+            mRecorder.start();
+            mRecorder.getLooper();
         }
+
+        private void startRecording(){
+            mRecorder.setStartTime();
+            isRecording = true;
+        }
+
+        private void finishRecording(){
+            isRecording = false;
+            mRecorder.quit();
+            mRecorder = null;
+        }
+
+
+        private void putPlayMessage(int what, int id, float note){
+            mPlayHandler.obtainMessage(what,id,0,note).sendToTarget();
+        }
+
 
         @Override
         public boolean quit() {

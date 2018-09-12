@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
@@ -16,8 +15,6 @@ import com.streetband.R;
 import com.streetband.activities.GeneralActivity;
 import com.streetband.customViews.CustomAddedInstrument;
 import com.streetband.customViews.CustomAddedInstrumentsList;
-import com.streetband.customViews.CustomChineseDrumsEdge;
-import com.streetband.customViews.CustomCursor;
 import com.streetband.customViews.CustomEditBoard;
 import com.streetband.customViews.CustomMainBoard;
 import com.streetband.customViews.CustomNavigationDrawer;
@@ -26,6 +23,7 @@ import com.streetband.customViews.Edge;
 import com.streetband.managers.InstrumentManager;
 import com.streetband.managers.SettingsManager;
 import com.streetband.models.Instrument;
+import com.streetband.models.Track;
 
 import java.util.List;
 
@@ -41,11 +39,11 @@ public class MainBoardFragment extends Fragment {
 
     //imported view
     private CustomSeekBar mCustomSeekBar;
-    private CustomCursor mCustomCursor;
 
 
     //adapters
     private InstrumentsAdapter mInstrumentsAdapter;
+    private MainBoardAdapter mMainBoardAdapter;
 
     //managers
     private InstrumentManager mInstrumentManager;
@@ -88,17 +86,13 @@ public class MainBoardFragment extends Fragment {
             @Override
             public void instrumentAdded(Instrument instrument, int position) {
                 mAddedInstrumentsList.notifyItemAdded();
-                mCustomMainBoard.addRow();
-                CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
-                customEditBoard.setOctaveSum(instrument.getOctaveSum());
-                customEditBoard.setStart(instrument.getStart());
-                customEditBoard.setLength(instrument.getLength());
-                mCustomMainBoard.addChild(customEditBoard, mCustomMainBoard.getRowCount() - 1);
+                mMainBoardAdapter.notifyRowAdded();
             }
 
             @Override
             public void instrumentRemoved(int position) {
                 mAddedInstrumentsList.notifyItemRemoved();
+                mMainBoardAdapter.notifyRowRemoved(position);
             }
         });
     }
@@ -118,21 +112,13 @@ public class MainBoardFragment extends Fragment {
 
 
         mCustomSeekBar = ((GeneralActivity) getActivity()).getSeekBar();
-        mCustomCursor = ((GeneralActivity) getActivity()).getCursor();
 
 
         mPopupWindow = popupWindow();
         mCustomMainBoard.addPopupWindow(mPopupWindow);
         mCustomMainBoard.setLength(mSettingsManger.getSongLength());
-        for (Instrument instrument : mInstrumentManager.getInstrumentsList()) {
-            mCustomMainBoard.addRow();
-            CustomEditBoard customEditBoard = new CustomEditBoard(getContext());
-            customEditBoard.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-            customEditBoard.setOctaveSum(instrument.getOctaveSum());
-            customEditBoard.setStart(instrument.getStart());
-            customEditBoard.setLength(instrument.getLength());
-            mCustomMainBoard.addChild(customEditBoard, mCustomMainBoard.getRowCount() - 1);
-        }
+        mMainBoardAdapter = new MainBoardAdapter(mInstrumentManager.getInstrumentsList());
+        mCustomMainBoard.setAdapter(mMainBoardAdapter);
 
 
         mCustomSeekBar.synchronizeWithMainBoard(mCustomMainBoard);
@@ -179,19 +165,10 @@ public class MainBoardFragment extends Fragment {
         mCustomNavigationDrawer.addNavigationListener(new CustomNavigationDrawer.NavigationListener() {
             @Override
             public void navigationPosition(int position, int shadowRadius) {
-                mCustomSeekBar.setLeft(position - shadowRadius);
-                mCustomSeekBar.updateVisibility();
-                mCustomCursor.setLeft(position - shadowRadius);
-                mCustomMainBoard.updateVisibility();
-            }
-        });
-        mCustomCursor.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (isActive) {
-                    mCustomCursor.setLeft(mCustomNavigationDrawer.getPosition());
-                    mCustomSeekBar.setLeft(mCustomNavigationDrawer.getPosition());
-                }
+//                mCustomSeekBar.setLeft(position - shadowRadius);
+//                mCustomSeekBar.updateVisibility();
+//                mCustomCursor.setLeft(position - shadowRadius);
+//                mCustomMainBoard.updateVisibility();
             }
         });
     }
@@ -270,11 +247,12 @@ public class MainBoardFragment extends Fragment {
 
         @Override
         public void instrumentSelected() {
-            ((GeneralActivity) getActivity()).instrumentSelected(mInstrument.getInstrumentName());
+            ((GeneralActivity) getActivity()).instrumentSelected(mInstrument);
         }
     }
 
 
+    //adapter
     private class InstrumentsAdapter extends CustomAddedInstrumentsList.Adapter<InstrumentHolder> {
         private List<Instrument> mInstruments;
 
@@ -321,6 +299,46 @@ public class MainBoardFragment extends Fragment {
                     break;
             }
             mPopupWindow.dismiss();
+        }
+    }
+
+
+
+    //custom main board adapter
+    private class MainBoardAdapter extends CustomMainBoard.Adapter{
+        List<Instrument> mInstruments;
+
+        public MainBoardAdapter(List<Instrument> instruments) {
+            mInstruments = instruments;
+        }
+
+        @Override
+        public void startChanged(int row, int positionInRow,float start) {
+            mInstruments.get(row).getTracks().get(positionInRow).setStart(start);
+        }
+
+        @Override
+        public void endChanged(int row, int positionInRow,float end) {
+            mInstruments.get(row).getTracks().get(positionInRow).setEnd(end);
+        }
+
+        @Override
+        public void bind(int row, int positionInRow, CustomEditBoard customEditBoard) {
+            Track track = mInstruments.get(row).getTracks().get(positionInRow);
+            customEditBoard.setStart(track.getStart());
+            customEditBoard.setEnd(track.getEnd());
+            customEditBoard.setOctaveSum(mInstruments.get(row).getOctaveSum());
+            customEditBoard.setNotesMap(mInstruments.get(row).getTracks().get(positionInRow).getNotesMap());
+        }
+
+        @Override
+        public int getChildrenCountInRow(int row) {
+            return mInstruments.get(row).getTracks().size();
+        }
+
+        @Override
+        public int getRowCount() {
+            return mInstruments.size();
         }
     }
 }

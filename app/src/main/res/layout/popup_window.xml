@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:textAllCaps="false"
-        android:background="@drawable/round_rect"
+        android:background="@drawable/round_rect_selector"
         android:text="edit" />
 
     <Button
@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:textAllCaps="false"
-        android:background="@drawable/round_rect"
+        android:background="@drawable/round_rect_selector"
         android:text="test" />
 
     <Button
@@ -28,7 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:textAllCaps="false"
-        android:background="@drawable/round_rect"
+        android:background="@drawable/round_rect_selector"
         android:text="delete" />
 
 </LinearLayout>

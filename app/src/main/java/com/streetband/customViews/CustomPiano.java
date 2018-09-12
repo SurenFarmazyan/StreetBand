@@ -247,7 +247,7 @@ public class CustomPiano extends View {
                                 }
                             }
                         }
-                        mNoteListener.notePressed(i);
+                        mNoteListener.notePressed(event.getPointerId(pointerIndex),i);
                         mPointers[event.getPointerId(pointerIndex)] = i;
 //                        Log.i(TAG,"pointer added id = " + event.getPointerId(pointerIndex) + " note = " + i);
                         invalidate();
@@ -282,7 +282,7 @@ public class CustomPiano extends View {
                             }
                         }
                         if(mPointers[event.getPointerId(pointerIndex)] != i){
-                            mNoteListener.noteChanged(mPointers[event.getPointerId(pointerIndex)],i);
+                            mNoteListener.noteChanged(event.getPointerId(pointerIndex),mPointers[event.getPointerId(pointerIndex)],i);
                             mPointers[event.getPointerId(pointerIndex)] = i;
                             invalidate();
                         }
@@ -291,7 +291,7 @@ public class CustomPiano extends View {
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_POINTER_UP:
                 case MotionEvent.ACTION_UP:
-                    mNoteListener.noteReleased(mPointers[event.getPointerId(pointerIndex)]);
+                    mNoteListener.noteReleased(event.getPointerId(pointerIndex),mPointers[event.getPointerId(pointerIndex)]);
                     mPointers[event.getPointerId(pointerIndex)] = -1;
 //                    Log.i(TAG,"pointer removed id = " + event.getPointerId(pointerIndex));
                     invalidate();
@@ -346,8 +346,8 @@ public class CustomPiano extends View {
     }
 
     public interface NoteListener{
-        void notePressed(float note);
-        void noteReleased(float note);
-        void noteChanged(float oldNote, float newNote);
+        void notePressed(int id,float note);
+        void noteReleased(int id,float note);
+        void noteChanged(int id, float oldNote, float newNote);
     }
 }
