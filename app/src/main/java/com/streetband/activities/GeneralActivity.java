@@ -30,6 +30,9 @@ import com.streetband.managers.SettingsManager;
 import com.streetband.models.ChineseDrumsKit;
 import com.streetband.models.GrandPiano;
 import com.streetband.models.Instrument;
+import com.streetband.threads.PlayerManager;
+import com.streetband.threads.PlayerMidi;
+import com.streetband.threads.PlayerWav;
 
 import java.io.IOException;
 
@@ -49,6 +52,10 @@ public class GeneralActivity extends AppCompatActivity {
     private CheckBox mMetronomeBox;
     private Button mDoneButton;
     private ImageView mSettingsView;
+
+    //players
+    private PlayerWav mPlayerWav;
+    private PlayerMidi mPlayerMidi;
 
     //custom views
     private CustomCountdown mCountdown;
@@ -147,6 +154,14 @@ public class GeneralActivity extends AppCompatActivity {
             }
         });
 
+        mPlayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPlayButton.setBackgroundColor(Color.GREEN);
+                new PlayerManager(GeneralActivity.this).start();
+            }
+        });
+
         mRecordButton.setEnabled(false);
         mRecordButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -195,7 +210,6 @@ public class GeneralActivity extends AppCompatActivity {
                 mMainBoardButton.setVisibility(View.GONE);
             }
         });
-
     }
 
     @Override

@@ -24,6 +24,7 @@ public class RecorderWav extends HandlerThread{
 
     private long mStartTime;
     private int mTact;
+    private float mPaddingInTime;
 
     public RecorderWav(Map<Integer,Set<Note>> map, Context context, int tact) {
         super(NAME);
@@ -36,6 +37,7 @@ public class RecorderWav extends HandlerThread{
     @Override
     protected void onLooperPrepared() {
         super.onLooperPrepared();
+        mPaddingInTime = 4*60/mTact*1000;
         mRecordHandler = new Handler(){
             @Override
             public void handleMessage(Message msg) {
@@ -49,8 +51,8 @@ public class RecorderWav extends HandlerThread{
     }
 
     private void noteDown(int note){
-        //TODO change time to tact
-        Note note1 = new Note(System.currentTimeMillis() - mStartTime,0,note);
+        float start = (System.currentTimeMillis() - mStartTime)/mPaddingInTime;
+        Note note1 = new Note(start,start + 1.0f,note);
         if(mSetMap.containsKey(note)){
             mSetMap.get(note).add(note1);
         }else {

@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GrandPiano implements Instrument,Serializable {
+public class GrandPiano implements Instrument, Serializable {
     public static final int ICON_SIZE = 80;
     public static final int OCTAVE_SUM = 8;
     public static final String NAME = "Grand Piano";
@@ -25,9 +25,9 @@ public class GrandPiano implements Instrument,Serializable {
     private float mVolume = 1.0f;
     private boolean isMuted;
 
-    public GrandPiano(Context context,boolean prepareIcon) {
+    public GrandPiano(Context context, boolean prepareIcon) {
         mInstrumentName = context.getString(R.string.grand_piano);
-        if(prepareIcon) {
+        if (prepareIcon) {
             float density = Density.getDensity(context);
             int Dimension = (int) (ICON_SIZE * density);
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -40,7 +40,6 @@ public class GrandPiano implements Instrument,Serializable {
             mIcon = BitmapFactory.decodeResource(context.getResources(), R.drawable.grand_piano_icon, options);
         }
     }
-
 
 
     @Override

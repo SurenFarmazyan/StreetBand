@@ -66,10 +66,9 @@ public class GrandPianoFragment extends Fragment implements GeneralActivity.Reco
             }
 
             @Override
-            public void noteChanged(float oldNote, float newNote) {
-                //TODO
-//                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_PLAY,newNote);
-//                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_STOP,oldNote);
+            public void noteChanged(int id, float oldNote, float newNote) {
+                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_STOP,id,oldNote);
+                mBackgroundHandler.putPlayMessage(BackgroundHandler.WHAT_PLAY,id,newNote);
             }
         });
 
