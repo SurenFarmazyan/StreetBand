@@ -68,18 +68,6 @@ public class MainBoardFragment extends Fragment {
         super.onCreate(savedInstanceState);
         //managers
         mSettingsManger = SettingsManager.getInstance();
-        mSettingsManger.addSettingsManagerListener(new SettingsManager.SettingsManagerListener() {
-            @Override
-            public void songLengthChanged(int songLength) {
-                if (getContext() != null)
-                    mCustomMainBoard.setLength(songLength);
-            }
-
-            @Override
-            public void tactChanged(int tact) {
-                //TODO
-            }
-        });
 
         mInstrumentManager = InstrumentManager.getInstance();
         mInstrumentManager.addInstrumentManagerListener(new InstrumentManager.InstrumentManagerListener() {
@@ -165,10 +153,23 @@ public class MainBoardFragment extends Fragment {
         mCustomNavigationDrawer.addNavigationListener(new CustomNavigationDrawer.NavigationListener() {
             @Override
             public void navigationPosition(int position, int shadowRadius) {
-//                mCustomSeekBar.setLeft(position - shadowRadius);
+                mCustomSeekBar.setLeft(position - shadowRadius);
 //                mCustomSeekBar.updateVisibility();
 //                mCustomCursor.setLeft(position - shadowRadius);
 //                mCustomMainBoard.updateVisibility();
+            }
+        });
+
+        mSettingsManger.addSettingsManagerListener(new SettingsManager.SettingsManagerListener() {
+            @Override
+            public void songLengthChanged(int songLength) {
+                if (getContext() != null)
+                    mCustomMainBoard.setLength(songLength);
+            }
+
+            @Override
+            public void tactChanged(int tact) {
+                //TODO
             }
         });
     }

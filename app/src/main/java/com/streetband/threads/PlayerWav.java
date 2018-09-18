@@ -9,6 +9,7 @@ import android.media.SoundPool;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.streetband.managers.SettingsManager;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class PlayerWav extends Player {
+    public static final String TAG = "PlayerWav";
     public static final String NAME = "PlayerWav";
     public static final int WHAT_PLAY = 1;
     public static final int WHAT_STOP = 2;
@@ -47,6 +49,7 @@ public class PlayerWav extends Player {
     private int mCurrentPositionInIdes;
     private float mCurrentPositionInTact;
     private int mTact;
+    private float mPaddingInTime;
 
     private long mStopTime;
     private long mStartTime;
@@ -68,6 +71,7 @@ public class PlayerWav extends Player {
         mSetMap = setMap;
         FOLDER = folder;
         mTact = mSettingsManager.getTact();
+        mPaddingInTime = 4*60/mTact*1000;
     }
 
     @SuppressLint("HandlerLeak")
@@ -106,8 +110,8 @@ public class PlayerWav extends Player {
         mEndTime = (long) (4 * mSettingsManager.getSongLength() * 1000 / ((float) mTact / 60)) + mStartTime;
 
         while (toPlay) {
-//            try {
-            mCurrentPositionInTact = (System.currentTimeMillis() - mStartTime) * ((float) mTact / 60_000);
+            try {
+            mCurrentPositionInTact = (System.currentTimeMillis() - mStartTime) / mPaddingInTime;
             while (mQueue.get(mCurrentPositionInQueue).getStart() <= mCurrentPositionInTact) {
                 mSoundPool.play(mIdes[mQueue.get(mCurrentPositionInQueue).getNote()], mVolume, mVolume, 1, 0, 0);
                 mMarkedToUnload[mQueue.get(mCurrentPositionInQueue).getNote()] = true;
@@ -119,10 +123,10 @@ public class PlayerWav extends Player {
             }
 
             loader();
-//                Thread.sleep(20);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

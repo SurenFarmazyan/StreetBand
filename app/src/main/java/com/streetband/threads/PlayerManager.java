@@ -1,6 +1,5 @@
 package com.streetband.threads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.HandlerThread;
 
@@ -34,7 +33,7 @@ public class PlayerManager extends Thread{
             if(instrument instanceof ChineseDrumsKit){
                 player = new PlayerWav(mContext,instrument.getTracks().get(0).getNotesMap(), ChineseDrumsLoader.FOLDER);
             }else if(instrument instanceof GrandPiano){
-                player = new PlayerMidi();
+                player = new PlayerMidi(mContext, instrument.getTracks().get(0).getNotesMap());
             }
             mPlayers.add(player);
         }
