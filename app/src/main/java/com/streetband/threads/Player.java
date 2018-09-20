@@ -8,4 +8,10 @@ public abstract class Player extends HandlerThread{
     }
 
     abstract void play();
+
+    abstract void stopPlay();
+
+    abstract void resumePlay();
+
+    abstract void pause();
 }

@@ -426,7 +426,7 @@ public class CustomMainBoard extends ViewGroup {
 
         measureChildren(widthMeasureSpec, heightMeasureSpec);
 
-        setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
     }
 
     @Override

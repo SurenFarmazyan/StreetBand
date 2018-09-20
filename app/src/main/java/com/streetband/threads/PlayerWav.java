@@ -26,6 +26,7 @@ public class PlayerWav extends Player {
     public static final String TAG = "PlayerWav";
     public static final String NAME = "PlayerWav";
     public static final int WHAT_PLAY = 1;
+    public static final int WHAT_AUTO_PLAY = 4;
     public static final int WHAT_STOP = 2;
     public static final int WHAT_RESUME = 3;
     public static final int MAX_STREAMS = 10;
@@ -56,6 +57,8 @@ public class PlayerWav extends Player {
     private long mEndTime;
     private boolean isReady;
     private boolean toPlay;
+    private boolean mPlay;
+    private boolean mPaused;
 
     public PlayerWav(Context context, Map<Integer, Set<Note>> setMap, String folder) {
         super(NAME);
@@ -82,10 +85,10 @@ public class PlayerWav extends Player {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
-                    case WHAT_PLAY:
+                    case WHAT_AUTO_PLAY:
                         onPlay();
                         break;
-                    case WHAT_STOP:
+                    case WHAT_PLAY:
                         onStop();
                         break;
                     case WHAT_RESUME:
@@ -109,23 +112,27 @@ public class PlayerWav extends Player {
         mStartTime = System.currentTimeMillis();
         mEndTime = (long) (4 * mSettingsManager.getSongLength() * 1000 / ((float) mTact / 60)) + mStartTime;
 
-        while (toPlay) {
-            try {
-            mCurrentPositionInTact = (System.currentTimeMillis() - mStartTime) / mPaddingInTime;
-            while (mQueue.get(mCurrentPositionInQueue).getStart() <= mCurrentPositionInTact) {
-                mSoundPool.play(mIdes[mQueue.get(mCurrentPositionInQueue).getNote()], mVolume, mVolume, 1, 0, 0);
-                mMarkedToUnload[mQueue.get(mCurrentPositionInQueue).getNote()] = true;
-                mCurrentPositionInQueue++;
-                if (mCurrentPositionInQueue == mQueue.size()) {
-                    toPlay = false;
-                    break;
-                }
-            }
+        if (mQueue.size() != 0) {
+            while (toPlay) {
+                try {
+                    if (!mPaused) {
+                        mCurrentPositionInTact = (System.currentTimeMillis() - mStartTime) / mPaddingInTime;
+                        while (mQueue.get(mCurrentPositionInQueue).getStart() <= mCurrentPositionInTact) {
+                            mSoundPool.play(mIdes[mQueue.get(mCurrentPositionInQueue).getNote()], mVolume, mVolume, 1, 0, 0);
+                            mMarkedToUnload[mQueue.get(mCurrentPositionInQueue).getNote()] = true;
+                            mCurrentPositionInQueue++;
+                            if (mCurrentPositionInQueue == mQueue.size()) {
+                                toPlay = false;
+                                break;
+                            }
+                        }
 
-            loader();
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                        loader();
+                    }
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -180,13 +187,37 @@ public class PlayerWav extends Player {
         mTact = tact;
     }
 
-    public void addMessage(int what) {
-        mPlayHandler.obtainMessage(what).sendToTarget();
-    }
-
     @Override
     public void play() {
         toPlay = true;
-        addMessage(WHAT_PLAY);
+        mPlayHandler.obtainMessage(WHAT_AUTO_PLAY).sendToTarget();
+    }
+
+    @Override
+    void stopPlay() {
+        mStartTime += (System.currentTimeMillis() - mStopTime);
+        mPaused = false;
+        super.quit();
+//        mPlayHandler.obtainMessage(WHAT_RESUME).sendToTarget();
+    }
+
+    @Override
+    void resumePlay() {
+        mStartTime += (System.currentTimeMillis() - mStopTime);
+        mPaused = false;
+//        mPlayHandler.obtainMessage(WHAT_RESUME).sendToTarget();
+    }
+
+    @Override
+    void pause() {
+        mPaused = true;
+        mStopTime = System.currentTimeMillis();
+//        mPlayHandler.obtainMessage(WHAT_PAUSE).sendToTarget();
+    }
+
+    @Override
+    public boolean quit() {
+        mSoundPool.release();
+        return super.quit();
     }
 }

@@ -121,7 +121,7 @@ public class CustomNavigationDrawer extends ViewGroup {
         v = getChildAt(0);
         v.layout(mDrawerEndX - mShadowRadius, 0, mDrawerEndX - mShadowRadius + v.getMeasuredWidth(), v.getMeasuredHeight());
         if (mNavigationListener != null) {
-            mNavigationListener.navigationPosition(mDrawerEndX, mShadowRadius);
+            mNavigationListener.navigationPosition(mDrawerEndX - mShadowRadius);
         }
     }
 
@@ -162,6 +162,6 @@ public class CustomNavigationDrawer extends ViewGroup {
     /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public interface NavigationListener {
-        void navigationPosition(int position, int shadowRadius);
+        void navigationPosition(int position);
     }
 }

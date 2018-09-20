@@ -17,6 +17,9 @@ public class PlayerManager extends Thread{
 
     private ArrayList<Player> mPlayers = new ArrayList<>();
 
+    private boolean isPlaying;
+    private boolean isPaused;
+
     public PlayerManager(Context context){
         mContext = context;
     }
@@ -44,6 +47,27 @@ public class PlayerManager extends Thread{
         onPlay();
     }
 
+    public void onPause() {
+        isPaused = true;
+        for (Player player : mPlayers) {
+            player.pause();
+        }
+    }
+
+    public void onStop() {
+        isPlaying = false;
+        for (Player player : mPlayers) {
+            player.stopPlay();
+        }
+    }
+
+    public void onResume() {
+        isPaused = false;
+        for (Player player : mPlayers) {
+            player.resumePlay();
+        }
+    }
+
     public void onPlay(){
         try {
             Thread.sleep(100);
@@ -52,6 +76,12 @@ public class PlayerManager extends Thread{
         }
         for(Player player : mPlayers){
             player.play();
+        }
+    }
+
+    public void quit(){
+        for (Player player : mPlayers) {
+            player.quit();
         }
     }
 }
