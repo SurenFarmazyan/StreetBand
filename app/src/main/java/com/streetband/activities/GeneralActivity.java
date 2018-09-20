@@ -389,6 +389,7 @@ public class GeneralActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             isPlaying = false;
             mPlayButton.setBackgroundResource(R.drawable.round_rect_selector);
+            mPlayButton.setSelected(false);
             mCustomSeekBar.setPosition(0);
             if (isRecording) {
                 mRecordListener.finishRecording();
