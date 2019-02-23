@@ -1,6 +1,8 @@
 package com.streetband.models;
 
-public class Note {
+import android.support.annotation.NonNull;
+
+public class Note implements Comparable<Note>{
     private float mStart;
     private float mEnd;
     private int mNote;
@@ -33,5 +35,16 @@ public class Note {
 
     public void setNote(int note) {
         mNote = note;
+    }
+
+    @Override
+    public int compareTo(@NonNull Note o) {
+        if(mStart - o.getStart() > 0){
+            return 1;
+        }else if(mStart - o.getStart() < 0){
+            return -1;
+        }else {
+            return 0;
+        }
     }
 }

@@ -20,7 +20,7 @@ import android.view.ViewTreeObserver;
 import com.streetband.R;
 
 public class CustomSeekBar extends View {
-    public static final String TAG = "CustomSeekBar";
+    public static final String TAG = "";
     public static final int DEFAULT_HEIGHT = 30;
 
 
@@ -61,7 +61,6 @@ public class CustomSeekBar extends View {
     private Rect mVisibleArea = new Rect();
     private float mVisibleWidth;
     private RectF mRectF = new RectF();
-
 
 
     public CustomSeekBar(Context context) {
@@ -144,10 +143,12 @@ public class CustomSeekBar extends View {
         mPosition = position*BIG_PADDING;
         preparePath();
         invalidate();
-        if(position > 5 && mScrollX < mWidth - mVisibleWidth){
-            mScrollX = (int)(BIG_PADDING*(position - 5));
-            mPureScrollX = mScrollX/mScaleX;
-            scrollTo(mScrollX,0);
+        if(isRecording) {
+            if (position > 5 && mScrollX < mWidth - mVisibleWidth) {
+                mScrollX = (int) (BIG_PADDING * (position - 5));
+                mPureScrollX = mScrollX / mScaleX;
+                scrollTo(mScrollX, 0);
+            }
         }
     }
 

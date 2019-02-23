@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChineseDrumsKit implements Instrument ,Serializable{
+public class ChineseDrumsKit implements Instrument, Serializable {
     public static final int ICON_SIZE = 80;
     public static final int OCTAVE_SUM = 2;
     public static final String NAME = "Chinese Drums Kit";
@@ -24,9 +24,9 @@ public class ChineseDrumsKit implements Instrument ,Serializable{
     private float mVolume = 1.0f;
     private boolean isMuted;
 
-    public ChineseDrumsKit(Context context,boolean prepareIcon) {
+    public ChineseDrumsKit(Context context, boolean prepareIcon) {
         mInstrumentName = context.getString(R.string.chinese_drums);
-        if(prepareIcon) {
+        if (prepareIcon) {
             float density = context.getResources().getDisplayMetrics().density;
             int width = (int) (density * ICON_SIZE);
             int height = (int) (density * ICON_SIZE);

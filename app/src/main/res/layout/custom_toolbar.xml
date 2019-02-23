@@ -60,7 +60,7 @@
         app:layout_constraintEnd_toStartOf="@+id/toolbar_settings"
         app:layout_constraintStart_toEndOf="@+id/toolbar_add"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_play" />
+        app:srcCompat="@drawable/play_button_selector" />
 
     <ImageButton
         android:id="@+id/toolbar_record"
@@ -110,6 +110,5 @@
         android:layout_height="25dp"
         android:layout_marginTop="4dp"
         android:background="@android:color/black"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar_play" />
 </android.support.constraint.ConstraintLayout>

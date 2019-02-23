@@ -1,5 +1,7 @@
 package com.streetband.activities;
 
+import android.animation.ObjectAnimator;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +33,7 @@ import com.streetband.managers.SettingsManager;
 import com.streetband.models.ChineseDrumsKit;
 import com.streetband.models.GrandPiano;
 import com.streetband.models.Instrument;
+import com.streetband.threads.PlayerManager;
 
 import java.io.IOException;
 
@@ -60,6 +64,9 @@ public class GeneralActivity extends AppCompatActivity {
     //tools
     private SoundPool mMetronomeSoundPool;
 
+    //player
+    private PlayerManager mPlayerManager;
+
     //managers
     private AssetManager mAssetManager;
     private FragmentManager mFragmentManager;
@@ -76,6 +83,8 @@ public class GeneralActivity extends AppCompatActivity {
     private int mMetronomeId;
     private int mStartSoundId;
 
+    private boolean isPlaying;
+    private boolean isPaused;
     private boolean isInSettings;
     private boolean isRowOpened;
 
@@ -147,6 +156,36 @@ public class GeneralActivity extends AppCompatActivity {
             }
         });
 
+        mStopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isPlaying) {
+                    mPlayerManager.onStop();
+                }
+            }
+        });
+
+        mPlayButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isPlaying) {
+                    if(isPaused){
+                        mPlayerManager.onResume();
+                    }else {
+                        mPlayerManager.onPause();
+                    }
+                    isPaused = !isPaused;
+                    mPlayButton.setSelected(!mPlayButton.isSelected());
+                } else {
+                    mPlayerManager = new PlayerManager(GeneralActivity.this);
+                    mPlayerManager.start();
+                    mPlayButton.setBackgroundColor(Color.GREEN);
+                    mPlayButton.setSelected(true);
+                    new Cursor().execute(false);
+                }
+            }
+        });
+
         mRecordButton.setEnabled(false);
         mRecordButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -169,6 +208,7 @@ public class GeneralActivity extends AppCompatActivity {
                 }
             }
         });
+
         mDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -195,7 +235,6 @@ public class GeneralActivity extends AppCompatActivity {
                 mMainBoardButton.setVisibility(View.GONE);
             }
         });
-
     }
 
     @Override
@@ -224,7 +263,7 @@ public class GeneralActivity extends AppCompatActivity {
             fragment = ChineseDrumsKitFragment.newInstance((ChineseDrumsKit)instrument);
             mRecordListener = (ChineseDrumsKitFragment)fragment;
         }
-        mCustomSeekBar.setLeft(0);
+        ObjectAnimator.ofInt(mCustomSeekBar, "left", mCustomSeekBar.getLeft(), 0).setDuration(1000).start();
         mMainBoardFragment = null;
         mMainBoardButton.setVisibility(View.VISIBLE);
         mFragmentManager.beginTransaction().setCustomAnimations(R.animator.scale_in_animator, R.animator.scale_out_animator)
@@ -235,9 +274,20 @@ public class GeneralActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        //TODO
-
-        super.onBackPressed();
+        new AlertDialog.Builder(GeneralActivity.this).setTitle(R.string.warning_dialog_title)
+                .setMessage(R.string.warning_dialog_message)
+                .setPositiveButton(R.string.warning_dialog_Positive_button, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //TODO
+                    }
+                })
+                .setNegativeButton(R.string.warning_dialog_negative_button, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        GeneralActivity.this.onBackPressed();
+                    }
+                }).create().show();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,52 +336,68 @@ public class GeneralActivity extends AppCompatActivity {
             mCountdown.setVisibility(View.GONE);
             mMetronomeSoundPool.play(mMetronomeBigId,1.0f,1.0f,0,0,0);
             mRecordListener.startRecording();
-            new Cursor().execute();
+            new Cursor().execute(true);
+//            mPlayerManager = new PlayerManager(GeneralActivity.this);
+//            mPlayerManager.start();
         }
     }
 
 
     //Cursor mover
-    private class Cursor extends AsyncTask<Void,Void,Void>{
+    private class Cursor extends AsyncTask<Boolean, Void, Void> {
         private long mStartTime;
         private long mEndTime;
-        private float offset;
-        private float mCurrentPosition;
+        private float mPaddingInTime;
+        private float mCurrentPositionInTact;
+
+        private boolean isRecording;
 
         @Override
         protected void onPreExecute() {
+            isPlaying = true;
             mStartTime = System.currentTimeMillis();
             mEndTime = (long)(4*mSettingsManger.getSongLength()*1000/((float)mSettingsManger.getTact()/60)) + mStartTime;
-            offset = (float) mSettingsManger.getTact()/60*0.01f;
-            mCurrentPosition = 0;
+
+            mPaddingInTime = 4 * 60 / mSettingsManger.getTact() * 1000;
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Void doInBackground(Boolean... booleans) {
+            isRecording = booleans[0];
             while (mEndTime > System.currentTimeMillis()){
-                try {
-                    Thread.sleep(40);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (!isPaused) {
+                    mCurrentPositionInTact = (System.currentTimeMillis() - mStartTime) / mPaddingInTime;
+                    publishProgress();
+                    try {
+                        Thread.sleep(40);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    mEndTime += (System.currentTimeMillis() - mEndTime);
                 }
-                mCurrentPosition += offset;
-                publishProgress();
             }
             return null;
         }
 
         @Override
         protected void onProgressUpdate(Void... values) {
-            mCustomSeekBar.setPosition(mCurrentPosition);
+            mCustomSeekBar.setPosition(mCurrentPositionInTact);
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            mRecordListener.finishRecording();
-            mRecordButton.setBackgroundResource(R.drawable.round_rect_selector);
+            isPlaying = false;
             mPlayButton.setBackgroundResource(R.drawable.round_rect_selector);
-            mCustomSeekBar.setIsRecording(false);
+            mPlayButton.setSelected(false);
             mCustomSeekBar.setPosition(0);
+            if (isRecording) {
+                mRecordListener.finishRecording();
+                mRecordButton.setBackgroundResource(R.drawable.round_rect_selector);
+                mCustomSeekBar.setIsRecording(false);
+            }else {
+                mPlayerManager.quit();
+            }
         }
     }
 

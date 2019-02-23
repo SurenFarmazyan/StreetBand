@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
@@ -27,7 +29,7 @@ import com.streetband.models.Track;
 
 import java.util.List;
 
-import static com.streetband.customViews.CustomAddedInstrumentsList.*;
+import static com.streetband.customViews.CustomAddedInstrumentsList.ScrollListener;
 
 public class MainBoardFragment extends Fragment {
 
@@ -39,7 +41,7 @@ public class MainBoardFragment extends Fragment {
 
     //imported view
     private CustomSeekBar mCustomSeekBar;
-
+    private ViewTreeObserver.OnGlobalLayoutListener mSeekBarLayoutListener;
 
     //adapters
     private InstrumentsAdapter mInstrumentsAdapter;
@@ -68,20 +70,9 @@ public class MainBoardFragment extends Fragment {
         super.onCreate(savedInstanceState);
         //managers
         mSettingsManger = SettingsManager.getInstance();
-        mSettingsManger.addSettingsManagerListener(new SettingsManager.SettingsManagerListener() {
-            @Override
-            public void songLengthChanged(int songLength) {
-                if (getContext() != null)
-                    mCustomMainBoard.setLength(songLength);
-            }
-
-            @Override
-            public void tactChanged(int tact) {
-                //TODO
-            }
-        });
 
         mInstrumentManager = InstrumentManager.getInstance();
+        mMainBoardAdapter = new MainBoardAdapter(mInstrumentManager.getInstrumentsList());
         mInstrumentManager.addInstrumentManagerListener(new InstrumentManager.InstrumentManagerListener() {
             @Override
             public void instrumentAdded(Instrument instrument, int position) {
@@ -117,7 +108,6 @@ public class MainBoardFragment extends Fragment {
         mPopupWindow = popupWindow();
         mCustomMainBoard.addPopupWindow(mPopupWindow);
         mCustomMainBoard.setLength(mSettingsManger.getSongLength());
-        mMainBoardAdapter = new MainBoardAdapter(mInstrumentManager.getInstrumentsList());
         mCustomMainBoard.setAdapter(mMainBoardAdapter);
 
 
@@ -162,13 +152,31 @@ public class MainBoardFragment extends Fragment {
             }
         });
 
+        mSeekBarLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                mCustomSeekBar.setLeft(mCustomNavigationDrawer.getPosition());
+            }
+        };
+        mCustomSeekBar.getViewTreeObserver().addOnGlobalLayoutListener(mSeekBarLayoutListener);
+
         mCustomNavigationDrawer.addNavigationListener(new CustomNavigationDrawer.NavigationListener() {
             @Override
-            public void navigationPosition(int position, int shadowRadius) {
-//                mCustomSeekBar.setLeft(position - shadowRadius);
-//                mCustomSeekBar.updateVisibility();
-//                mCustomCursor.setLeft(position - shadowRadius);
-//                mCustomMainBoard.updateVisibility();
+            public void navigationPosition(int position) {
+                mCustomSeekBar.setLeft(position);
+            }
+        });
+
+        mSettingsManger.addSettingsManagerListener(new SettingsManager.SettingsManagerListener() {
+            @Override
+            public void songLengthChanged(int songLength) {
+                if (getContext() != null)
+                    mCustomMainBoard.setLength(songLength);
+            }
+
+            @Override
+            public void tactChanged(int tact) {
+                //TODO
             }
         });
     }
@@ -209,7 +217,7 @@ public class MainBoardFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //TODO
+        mCustomSeekBar.getViewTreeObserver().removeOnGlobalLayoutListener(mSeekBarLayoutListener);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
